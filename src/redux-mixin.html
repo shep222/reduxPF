@@ -1,0 +1,31 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<script src="../node_modules/redux/dist/redux.js"></script>
+<script>
+  // Setup a Redux store
+  const state = {
+      importdate: '10-13-2017'
+    };
+    const reducer = (state, action) => {
+    switch (action.type) {
+        // case 'ADD_PATIENT':
+        // // ALWAYS return new state
+        // const patients = state.patients.slice(0);
+        // patients.push(action.patient);
+        // return Object.assign({}, state, {
+        //     patients: patients // New message
+        // });
+
+        // Return the state, nothing changed.
+        default:
+        return state;
+
+    }
+    };
+
+  const store = Redux.createStore(reducer, state,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+  );
+
+  // Export the ReduxMixin
+  ReduxMixin = PolymerRedux(store);
+</script>

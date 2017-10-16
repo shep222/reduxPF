@@ -1,0 +1,282 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+
+
+<link rel="import" href="child-status-button.html">
+<!-- <link rel="import" href="settings-button.html"> -->
+
+<!-- CSS
+<link rel="import" href="../css/healthspaces-colors.html">
+<link rel="import" href="../css/healthspaces-styles.html"> -->
+
+<!-- Fonts -->
+<!-- <link rel="import" href="../fonts/roboto-font.html"> -->
+
+<dom-module id="parent-status-button">
+    <template>
+        <style include="healthspaces-styles">
+             :host {
+                display: block;
+            }
+        </style>
+
+        <!-- Firebase Queries -->
+        <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}"></firebase-query>
+        <firebase-query id="patient" path="/patients/rockhill/{{importdate}}/{{patientkey}}" data="{{patients}}"></firebase-query>
+
+
+        <!-- <template items="{{patient}}"> -->
+        <div on-tap="psb">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div>
+                    <h1>{{patient.firstName}} {{patient.lastName}}</h1>
+                </div>
+
+                <!-- Open Child Status -->
+                <div>
+                    <child-status-button id="child-status-button-in-parent" patient="{{patient}}" newparentstatus="{{newparentstatus}}" closeparentmodal="{{closeparentmodal}}" on-tap="csb"></child-status-button>
+                </div>
+            </div>
+            <!-- Display Parent Status Button Modal -->
+            <paper-dialog id="psb" with-backdrop style="text-align:center; padding: 24px;">
+                <template is="dom-if" if="{{_equals('CLINIC', patient.grandparentStatus)}}">
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #ff66ff; outline: 0; font-size: 28px;"
+                        data="CLINICAL" on-tap="_selectParentStatus">CLINICAL</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #d35e2a; outline: 0; font-size: 28px;"
+                        data="CASTER" on-tap="_selectParentStatus">CASTER</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #2e2e2e; border: none; background-color: #ffe828; outline: 0; font-size: 28px;"
+                        data="XRAY" on-tap="_selectParentStatus">XRAY</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #2a9fd3; outline: 0; font-size: 28px;"
+                        data="PROVIDER" on-tap="_selectParentStatus">PROVIDER</button>
+                    <br/>
+                </template>
+                <template is="dom-if" if="{{_equals('LOBBY', patient.grandparentStatus)}}">
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px;"
+                        data="FRONTDESK" on-tap="_selectParentStatus">FRONTDESK</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px;color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px;"
+                        data="CHECKOUT" on-tap="_selectParentStatus">CHECKOUT</button>
+                    <br/>
+                </template>
+                <template is="dom-if" if="{{_equals('BOTH', patient.grandparentStatus)}}">
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px;"
+                        data="FRONTDESK" on-tap="_selectParentStatus">FRONTDESK</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px;"
+                        data="CHECKOUT" on-tap="_selectParentStatus">CHECKOUT</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #ff66ff; outline: 0; font-size: 28px;"
+                        data="CLINICAL" on-tap="_selectParentStatus">CLINICAL</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #d35e2a; outline: 0; font-size: 28px;"
+                        data="CASTER" on-tap="_selectParentStatus">CASTER</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #2e2e2e; border: none; background-color: #ffe828; outline: 0; font-size: 28px;"
+                        data="XRAY" on-tap="_selectParentStatus">XRAY</button>
+                    <br/>
+                    <button style="text-align:center; width: 300px; height: 64px; color: #fff; border: none; background-color: #2a9fd3; outline: 0; font-size: 28px;"
+                        data="PROVIDER" on-tap="_selectParentStatus">PROVIDER</button>
+                    <br/>
+                </template>
+            </paper-dialog>
+        </div>
+        <!-- </template> -->
+    </template>
+
+    <script>
+        /**
+     * @customElement
+     * @polymer
+     */
+        class ParentStatusButton extends Polymer.GestureEventListeners(Polymer.Element) {
+            static get is() { return 'parent-status-button'; }
+            static get properties() {
+                return {
+                    roomname: {
+                        type: String,
+                        notify: true,
+                        reflectToAttribute: true,
+                        // observer: "_whoHere2"
+                        // TODO: refactor to remove duplicate observer
+                    },
+                    patients: {
+                        type: Object,
+                        value: function () {
+                            return {};
+                        }
+                    },
+                    patient: {
+                        type: Object,
+                    },
+                    importdate: {
+                        type: String,
+                    },
+                    newparentstatus: {
+                        type: String,
+                        notify: true,
+                        reflectToAttribute: true
+                    },
+                    nextroom: {
+                        type: String
+                    },
+                    patientkey: {
+                        type: String
+                    },
+                    displayname: {
+                        type: String
+                    },
+                    closeparentmodal: {
+                        type: Boolean,
+                        notify: true,
+                        reflectToAttribute: true
+                    }
+                };
+            }
+            // /COMMAND Z TO HERE
+            static get observers() {
+                return [
+                    // '_whoHere(patients.*)'
+                ]
+            }
+
+            constructor() {
+                super()
+                function addZero(i) {
+                    if (i < 10) {
+                        i = "0" + i;
+                    }
+                    return i;
+                }
+                var myDate = new Date();
+                this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+            }
+
+            whereNext() {
+                var myList = []
+                for (var i = 0; i < this.patients.length; i++) {
+                    if (this.patients[i].providerName === this.patient.providerName && this.patients[i].primaryStatus === "WAITING FOR PROVIDER") {
+                        myList.push(this.patients[i])
+                    }
+                }
+                var time = 0
+                for (var j = 0; j < myList.length; j++) {
+                    var thisTime = parseInt(myList[j].milTime)
+                    if (thisTime < time || time === 0) {
+                        time = myList[j].milTime
+                        this.nextroom = myList[j].roomLocation
+                    }
+                }
+            }
+
+
+            // getDisplayName() {
+            //     this.displayname = this.patient.firstName.substring(0,2) + "* " +  this.patient.lastName.substring(0,2) + "*"
+            // }
+
+
+            //TODO: Who Here Make a Cloud Function
+            // Find what Patient is in Selected Room
+            // _whoHere() {
+            //     console.log('here1');
+            //     console.log(this.patient)
+            //     // if (this.patient.roomLocation == this.roomname) {
+            //     // } else {
+            //     // console.log(this.patients);
+            //     for (var i = 0; i < this.patients.length; i++) {
+            //         // console.log(a[i].roomLocation);
+            //         if (this.patients[i].roomLocation === this.roomname && this.roomname !== undefined) {
+            //             this.patient = this.patients[i]
+            //             console.log(this.patient.roomLocation)
+            //             return this.patient
+            //         } else {
+            //             this.patient = 'No Patient'
+            //         }
+            //     }
+
+            // }
+            // _whoHere2() {
+            //     console.log('here2');
+            //     // if (this.patient.roomLocation == this.roomname) {
+            //     // } else {
+            //     // console.log(this.patients);
+            //     for (var i = 0; i < this.patients.length; i++) {
+            //         // console.log(a[i].roomLocation);
+            //         if (this.patients[i].roomLocation === this.roomname && this.roomname !== undefined) {
+            //             this.patient = this.patients[i]
+            //             console.log(this.patient)
+            //             return this.patient
+            //         }
+            //     }
+
+            // }
+
+
+            //TODO: Where Next - Make a Cloud Function
+            //Loop over Patients to find where the Provider go next
+            // _whereNext() {
+            //     // doing this a little different from page paper, if it doesnt work get provider the way the page does
+            //     let provider = this.patient.providerName
+            //     let myList = []
+            //     let thisTime = 0
+            //     this.patients.forEach(p => {
+            //         if (p.providerName == provider && p.primaryStatus == 'WAITING FOR PROVIDER') {
+            //             myList.push(p)
+            //         }
+            //     })
+            //     myList.forEach(el => {
+            //         if (parseInt(el.milTime < thisTime || thisTime == 0)) {
+            //             thisTime = el.milTime
+            //             this.nextRoom = el.roomLocation
+            //         }
+            //     })
+            // }
+
+            //Select Parent Status
+            _selectParentStatus() {
+                this.newparentstatus = event.target.attributes.data.value
+                console.log(this.patient.primaryStatus);
+                if (this.patient.primaryStatus === "PROVIDER IN ROOM") {
+                    this.whereNext()
+                }
+                this.$.psb.close()
+
+
+                // this.$.csb.open()
+                var cspip = this.shadowRoot.querySelector("child-status-button")
+                console.log(cspip)
+                cspip.getFirstElement
+                var x = cspip.shadowRoot.querySelector('#child-status-button-circle')
+                console.log(x)
+                x.click()
+            }
+
+            //Check if Patient Status is equal to value being passed in
+            _equals(x, y) {
+                return x === y
+            }
+
+            //Parent Status Button Modal
+            psb() {
+                // console.log(this.newparentstatus)
+                event.stopPropagation();
+                let body = document.querySelector('body')
+                Polymer.dom(body).appendChild(this.$.psb)
+                //TODO: upgrade this to Polymer 2
+                this.$.psb.open()
+            }
+
+            //End Tag
+        }
+
+        window.customElements.define(ParentStatusButton.is, ParentStatusButton);
+    </script>
+</dom-module>

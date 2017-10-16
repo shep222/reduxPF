@@ -1,0 +1,66 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="parent-status-button.html">
+
+
+<dom-module id="room-view">
+  <template>
+    <style include="healthspaces-styles">
+       :host {
+        display: block;
+      }
+      /* component common styles */
+
+
+      /* x-small handset */
+
+      @media (max-width: 480px) {}
+      /* small handset */
+
+      @media (max-width: 600px) {}
+      /* small tablet */
+
+      @media (max-width: 840px) {}
+      /* tablet */
+
+      @media (max-width: 960px) {}
+      /* tablet - monitor */
+
+      @media (max-width: 1280px) {}
+      /* monitor */
+
+      @media (max-width: 1440px) {}
+      /* monitor */
+
+      @media (max-width: 1660px) {}
+      /* monitor */
+
+      @media (max-width: 1920px) {}
+      /* monitor */
+
+      @media (min-width: 1921px) {}
+    </style>
+
+    <parent-status-button patient="{{patient}}" closeparentmodal="{{closeparentmodal}}"></parent-status-button>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class RoomView extends Polymer.Element {
+      static get is() { return 'room-view'; }
+      static get properties() {
+        return {
+          closeparentmodal: {
+            type: Boolean,
+            notify: true,
+            reflectToAttribute: true
+          }
+        };
+      }
+    }
+
+    window.customElements.define(RoomView.is, RoomView);
+  </script>
+</dom-module>

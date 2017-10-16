@@ -1,0 +1,363 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/slate-font-awesome/slate-font-awesome.html">
+<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
+
+<!-- Firebase App -->
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+
+<!-- Icons -->
+<link rel="import" href="my-icons.html">
+
+<!-- Stylesheet -->
+<link rel="import" href="shared-styles.html">
+
+<!-- Import Views-->
+<link rel="lazy-import" href="hs-lobby.html">
+<link rel="lazy-import" href="hs-clinic.html">
+<link rel="lazy-import" href="hs-frontdesk.html">
+<link rel="lazy-import" href="hs-checkout.html">
+<link rel="lazy-import" href="hs-clinical.html">
+<link rel="lazy-import" href="hs-provider.html">
+<link rel="lazy-import" href="hs-xray.html">
+<link rel="lazy-import" href="hs-casting.html">
+<link rel="lazy-import" href="hs-all.html">
+<link rel="lazy-import" href="hs-settings.html">
+<link rel="lazy-import" href="my-view404.html">
+<link rel="import" href="my-login.html">
+<link rel="import" href="login-screen.html">
+
+<dom-module id="my-app">
+  <template>
+    <!-- Firebase Production -->
+    <!-- Change .firebasesrc to Production Project ID -->
+    <!-- <firebase-app name="" id="firebase" auth-domain="healthspaces-starter-kit.firebaseapp.com" database-url="https://healthspaces-starter-kit.firebaseio.com"
+      api-key="AIzaSyAjLPozygRRC_wHZiUW6X6XifvgLF_MDQY" storage-bucket="healthspaces-starter-kit.appspot.com" messaging-sender-id="1012983962748">
+    </firebase-app> -->
+
+    <!-- Firebase Development -->
+    <!-- Change .firebasesrc to Development Project ID -->
+    <!-- <firebase-app name="" id="firebase" auth-domain="pf-hs-io-dev.firebaseapp.com" database-url="https://pf-hs-io-dev.firebaseio.com"
+    api-key="AIzaSyDayH--QsWw9r-09_X3vSRkJmrbJjIEmjk" storage-bucket="pf-hs-io-dev.appspot.com" messaging-sender-id="512649786933">
+  </firebase-app> -->
+
+    <firebase-app  api-key= "AIzaSyAwVpwwot83AcMyACSe4_8JZaMWYOYL9Wk"
+        auth-domain= "pf-hs-io-dev-shep.firebaseapp.com"
+        database-url= "https://pf-hs-io-dev-shep.firebaseio.com"
+        project-id= "pf-hs-io-dev-shep"
+        storage-bucket= "pf-hs-io-dev-shep.appspot.com"
+        messaging-sender-id= "519573137272">
+    </firebase-app>
+
+
+
+
+    <style include="shared-styles slate-font-awesome">
+       :host {
+        display: block;
+        --app-drawer-width: 75px;
+      }
+
+      app-drawer {
+        text-align: center;
+        border-right: 1px solid #e2e2e2;
+      }
+
+      .brand-box {
+        background-color: #2ad3b3;
+        color: #fff;
+      }
+
+      .top-padding {
+        padding-top: 10px;
+      }
+
+      .parent-pad {
+        margin-top: 10px;
+        /* background: #e2e2e2; */
+        /* background: #e2e2e2; */
+      }
+
+      .parent-statuses {
+        margin-top: 10px;
+        /* margin-bottom: 10px; */
+        /* border-bottom: 1px solid #e2e2e2; */
+      }
+
+      .border-red {
+        border: 1px solid #2ad3b3;
+        /* margin: 3px; */
+      }
+
+      .no-border {
+        border: none;
+      }
+
+      .fa {
+        pointer-events: none;
+        margin-top: 10px;
+      }
+    </style>
+
+    <iron-media-query query="(min-width: 640px)" query-matches="{{wide}}"></iron-media-query>
+
+    <app-location route="{{route}}" url-space-regex="^[[rootPath]]"></app-location>
+    <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+
+    <firebase-auth id="auth" user="{{user}}" status-known="{{statusKnown}}" provider="google"></firebase-auth>
+
+    <!-- show login screen if there is no user logged in -->
+    <template is="dom-if" if="[[!user]]">
+      <login-screen></login-screen>
+    </template>
+
+    <app-drawer-layout fullbleed narrow="{{narrow}}">
+      <!-- Drawer content -->
+      <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
+        <!-- <app-toolbar class="brand-box"><img class="brandLogo" src="../images/HealthSpacesTransparent_Icon2.png" />&nbsp;<span class="brandName">PatientFlow</span></app-toolbar> -->
+        <app-toolbar class="brand-box"><img class="brandLogo" src="../images/HealthSpacesTransparent_Icon2.png" /></app-toolbar>
+        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+
+          <div id="dir_1" class="parent-pad"><a id="lobbyParentIcon" class="border-red" on-tap="_toggleParentIcons" name="hs-lobby" href="[[rootPath]]hs-lobby"><i class="fa fa-users fa-2x"></i></a></div>
+
+          <div id="dir_2" class="parent-statuses parent-pad"><a id="clinicParentIcon" on-tap="_toggleParentIcons" name="hs-clinic" href="[[rootPath]]hs-clinic"><i class="fa fa-medkit fa-2x"></i></a></div>
+
+          <div class="top-padding">
+
+            <div id="lobby_filters">
+              <div id="dir_3"><a name="hs-frontdesk" id="frontDeskIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-frontdesk"><i class="fa fa-user-plus fa-1x"></i></a></div>
+              <div id="dir_4"><a name="hs-checkout" id="checkoutIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-checkout"><i class="fa fa-user-times fa-1x"></i></a></div>
+            </div>
+
+            <div id="clinic_filters">
+              <div id="dir_5"><a style="display: none" name="hs-clinical" id="clinicalIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-clinical"><i class="fa fa-stethoscope fa-1x"></i></a></div>
+              <div id="dir_6"><a style="display: none" name="hs-provider" id="providerIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-provider"><i class="fa fa-user-md fa-1x"></i></a></div>
+              <div id="dir_7"><a style="display: none" name="hs-xray" id="xrayIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-xray"><i class="fa fa-film fa-1x"></i></a></div>
+              <div id="dir_8"><a style="display: none" name="hs-casting" id="castingIcon" on-tap="_toggleChildIcons" href="[[rootPath]]hs-casting"><i class="fa fa-chain-broken fa-1x"></i></a></div>
+            </div>
+
+          </div>
+
+
+          <div class="top-padding">
+            <!-- <div id="dir_9"><a name="view2" href="[[rootPath]]view2"><i class="fa fa-filter fa-1x"></i></a></div> -->
+          </div>
+
+        </iron-selector>
+        <!-- <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+          <a name="hs-lobby" href="[[rootPath]]hs-lobby">Lobby</a>
+          <a name="hs-clinic" href="[[rootPath]]hs-clinic">Clinic</a>
+          <a name="hs-frontdesk" href="[[rootPath]]hs-frontdesk">FrontDesk</a>
+          <a name="hs-checkout" href="[[rootPath]]hs-checkout">Checkout</a>
+          <a name="hs-clinical" href="[[rootPath]]hs-clinical">Clinical</a>
+          <a name="hs-provider" href="[[rootPath]]hs-provider">Provider</a>
+          <a name="hs-xray" href="[[rootPath]]hs-xray">Xray</a>
+          <a name="hs-casting" href="[[rootPath]]hs-casting">Casting</a>
+        </iron-selector> -->
+      </app-drawer>
+
+      <!-- Main content -->
+      <!-- <app-header-layout has-scrolling-region> -->
+      <app-header-layout fullbleed>
+        <!-- <app-header slot="header" condenses reveals effects="waterfall"> -->
+        <app-header slot="header" fixed>
+          <app-toolbar wide-layout$="{{wide}}">
+            <template is="dom-if" if="{{wide}}">
+              <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
+              <div main-title></div>
+            </template>
+            <template is="dom-if" if="{{!wide}}">
+              <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
+              <div main-title>PatientFlow</div>
+            </template>
+            <div class="userProfileIcon"></div>
+            <paper-menu-button>
+              <paper-icon-button icon="account-circle" slot="dropdown-trigger" alt="menu"></paper-icon-button>
+              <paper-listbox class="userProfileDropdown" slot="dropdown-content">
+                <paper-item>My Account</paper-item>
+                <my-login></my-login>
+                <paper-item><a style="color: black; text-decoration: none" name="hs-all" href="[[rootPath]]hs-all">All Patients</a></paper-item>
+                <paper-item><a style="color: black; text-decoration: none" name="hs-settings" href="[[rootPath]]hs-settings">Settings</a></paper-item>
+
+              </paper-listbox>
+            </paper-menu-button>
+          </app-toolbar>
+        </app-header>
+
+        <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+          <hs-lobby name="hs-lobby"></hs-lobby>
+          <hs-clinic name="hs-clinic"></hs-clinic>
+          <hs-frontdesk name="hs-frontdesk"></hs-frontdesk>
+          <hs-checkout name="hs-checkout"></hs-checkout>
+          <hs-clinical name="hs-clinical"></hs-clinical>
+          <hs-provider name="hs-provider"></hs-provider>
+          <hs-xray name="hs-xray"></hs-xray>
+          <hs-casting name="hs-casting"></hs-casting>
+          <hs-all name="hs-all"></hs-all>
+          <hs-settings name="hs-settings"></hs-settings>
+          <my-view404 name="my-view404"></my-view404>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+    <paper-tooltip for="dir_1" position="right" animation-delay="0">Lobby</paper-tooltip>
+    <paper-tooltip for="dir_2" position="right" animation-delay="0">Clinic</paper-tooltip>
+    <paper-tooltip for="dir_3" position="right" animation-delay="0">Front Desk</paper-tooltip>
+    <paper-tooltip for="dir_4" position="right" animation-delay="0">Checkout</paper-tooltip>
+    <paper-tooltip for="dir_5" position="right" animation-delay="0">Clinical</paper-tooltip>
+    <paper-tooltip for="dir_6" position="right" animation-delay="0">Provider</paper-tooltip>
+    <paper-tooltip for="dir_7" position="right" animation-delay="0">X-ray</paper-tooltip>
+    <paper-tooltip for="dir_8" position="right" animation-delay="0">Casting</paper-tooltip>
+    <paper-tooltip for="dir_9" position="right" animation-delay="0">Provider</paper-tooltip>
+  </template>
+
+  <script>
+    class MyApp extends Polymer.Element {
+      static get is() { return 'my-app'; }
+
+      static get properties() {
+        return {
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            observer: '_pageChanged',
+          },
+          routeData: Object,
+          subroute: String,
+          // This shouldn't be neccessary, but the Analyzer isn't picking up
+          // Polymer.Element#rootPath
+          rootPath: String,
+        };
+      }
+
+      static get observers() {
+        return [
+          '_routePageChanged(routeData.page)',
+        ];
+      }
+
+      _routePageChanged(page) {
+        // If no page was found in the route data, page will be an empty string.
+        // Deault to 'view1' in that case.
+        this.page = page || 'hs-lobby';
+
+        // Close a non-persistent drawer when the page & route are changed.
+        if (!this.$.drawer.persistent) {
+          this.$.drawer.close();
+        }
+      }
+
+      _pageChanged(page) {
+        // Load page import on demand. Show 404 page if fails
+        var resolvedPageUrl = this.resolveUrl(page + '.html');
+        Polymer.importHref(
+          resolvedPageUrl,
+          null,
+          this._showPage404.bind(this),
+          true);
+      }
+
+      _showPage404() {
+        this.page = 'my-view404';
+      }
+
+
+      _addRedBorder(el) {
+        el.className -= " no-border"
+        el.className += " border-red"
+      }
+
+      _removeRedBorder(el) {
+        el.className -= " border-red"
+        el.className += " no-border"
+      }
+
+      _hide(el) {
+        el.className -= " hide"
+        el.className += " hide"
+      }
+
+      _toggleParentIcons() {
+        let childIcons = [this.$.checkoutIcon, this.$.frontDeskIcon, this.$.clinicalIcon, this.$.providerIcon, this.$.xrayIcon, this.$.castingIcon]
+        let clinicChildIcons = [this.$.clinicalIcon, this.$.providerIcon, this.$.xrayIcon, this.$.castingIcon]
+        let lobbyChildIcons = [this.$.checkoutIcon, this.$.frontDeskIcon]
+
+        if (event.target.id === 'lobbyParentIcon') {
+          this._removeRedBorder(this.$.clinicParentIcon)
+          childIcons.forEach(el => {
+            this._removeRedBorder(el)
+          })
+          clinicChildIcons.forEach(el => {
+            el.style = "display: none"
+          })
+          lobbyChildIcons.forEach(el => {
+            el.style = "display: block"
+          })
+        }
+
+        if (event.target.id === 'clinicParentIcon') {
+          this._removeRedBorder(this.$.lobbyParentIcon)
+          childIcons.forEach(el => {
+            this._removeRedBorder(el)
+          })
+          lobbyChildIcons.forEach(el => {
+            el.style = "display: none"
+          })
+          clinicChildIcons.forEach(el => {
+            el.style = "display: block"
+          })
+        }
+        this._addRedBorder(event.target)
+      }
+
+      _toggleChildIcons() {
+        let clinicChildIcons = [this.$.clinicalIcon, this.$.providerIcon, this.$.xrayIcon, this.$.castingIcon]
+        let lobbyChildIcons = [this.$.checkoutIcon, this.$.frontDeskIcon]
+
+        lobbyChildIcons.forEach(icon => {
+          if (icon == event.target) {
+            this._addRedBorder(icon)
+            this._addRedBorder(this.$.lobbyParentIcon)
+            this._removeRedBorder(this.$.clinicParentIcon)
+          } else {
+            this._removeRedBorder(icon)
+          }
+        })
+
+        clinicChildIcons.forEach(icon => {
+          if (icon == event.target) {
+            this._removeRedBorder(this.$.lobbyParentIcon)
+            this._addRedBorder(this.$.clinicParentIcon)
+            this._addRedBorder(icon)
+          } else {
+            this._removeRedBorder(icon)
+          }
+        })
+      }
+    }
+
+    window.customElements.define(MyApp.is, MyApp);
+  </script>
+</dom-module>

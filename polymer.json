@@ -1,0 +1,35 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/my-app.html",
+  "fragments": [
+    "src/hs-lobby.html",
+    "src/hs-clinic.html",
+    "src/hs-checkout.html",
+    "src/hs-all.html",
+    "src/hs-settings.html",
+    "src/hs-casting.html",
+    "src/my-view404.html"
+  ],
+  "sources": [
+    "src/**/*",
+    "images/**/*",
+    "bower.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "lint": {
+    "rules": ["polymer-2"]
+  },
+  "builds": [
+ 
+  {
+      "name": "PF-Unbundled",
+      "bundle": false,
+      "js": {"minify": false, "compile": false},
+      "css": {"minify": false},
+      "html": {"minify": false}
+  }
+  ]
+}

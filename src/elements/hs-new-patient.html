@@ -1,0 +1,267 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../src/shared-styles.html">
+
+<!-- Bower Components -->
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-time-input/paper-time-input.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+
+<!-- Buttons -->
+<link rel="import" href="../buttons/hs-save-button.html">
+<link rel="import" href="../buttons/hs-cancel-button.html">
+
+
+<dom-module id="hs-new-patient">
+    <template>
+        <style include="shared-styles">
+             :host {
+                display: block;
+                padding: 10px;
+            }
+
+            .new-patient-card {
+                @apply --layout-vertical;
+                @apply --layout-flex-3;
+            }
+
+            .new-patient-card-footer {
+                margin-top: 16px;
+                height: 64px;
+                @apply --layout-horizontal;
+                @apply --layout-center;
+            }
+
+            .new-patient-card-footer-left {
+                height: 64px;
+                padding-left: 16px;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                width: 50%;
+                border-right: 1px solid #d2d2d2;
+            }
+
+            .new-patient-card-footer-right {
+                height: 64px;
+                padding-right: 16px;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                width: 50%;
+            }
+        </style>
+        <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}">
+        </firebase-query>
+        <firebase-query id="primarystatus" path="/primarystatus" data="{{primarystatus}}">
+        </firebase-query>
+        <firebase-query id="secondarystatus" path="/secondarystatus" data="{{secondarystatus}}">
+        </firebase-query>
+        <firebase-query id="doctors" path="/providers/{{importdate}}" data="{{doctors}}">
+        </firebase-query>
+        <firebase-query id="location" path="/location" data="{{location}}">
+        </firebase-query>
+        <firebase-query id="payertype" path="/payertype" data="{{payertype}}">
+        </firebase-query>
+        <firebase-query id="appointmenttype" path="/appointmenttype" data="{{appointmenttype}}">
+        </firebase-query>
+
+        <div class="new-patient-card">
+            <!-- Dropdown for Practice Primary Status
+            <div>
+                <paper-dropdown-menu id="primaryStatus" label="Primary Status" style="width:100%">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" tabindex="0">
+                        <template is="dom-repeat" items="[[primarystatus]]" as="primarystatus">
+                            <paper-item class="inputWidth">{{primarystatus.name}}</paper-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </div> -->
+            <!-- Patient First Name Input -->
+            <div>
+                <paper-input id="firstName" float-label label="Patient First Name" required auto-validate error-message="First Name Required"></paper-input>
+            </div>
+
+            <!-- Patient Last Name Input -->
+            <div>
+                <paper-input id="lastName" float-label label="Patient Last Name"></paper-input>
+            </div>
+
+            <!-- Patient DOB -->
+            <div>
+                <paper-input id="patientDOB" type="date" float-label label="Patient Date of Birth"></paper-input>
+            </div>
+
+            <!-- Patient Appointment Time-->
+            <div>
+                <paper-time-input id="appointmentTime" label="Appointment Time"></paper-time-input>
+            </div>
+
+            <!-- Dropdown for Practice Appointment Type -->
+            <div>
+                <paper-dropdown-menu id="appointmentType" label="Appointment Type" style="width:100%">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" tabindex="0">
+                        <template is="dom-repeat" items="[[appointmenttype]]" as="appointmenttype">
+                            <paper-item class="inputWidth">[[appointmenttype.name]]</paper-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </div>
+
+            <!-- Dropdown for Practice Provider Name -->
+            <div>
+                <paper-dropdown-menu id="providerName" label="Provider" style="width:100%">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" tabindex="0">
+                        <template is="dom-repeat" items="[[doctors]]" as="doctors">
+                            <paper-item class="inputWidth">{{doctors.name}}</paper-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </div>
+
+            <!-- Dropdown for Clinic Payer Type -->
+            <div>
+                <paper-dropdown-menu id="payerType" label="Payer Type" style="width:100%">
+                    <paper-listbox slot="dropdown-content" class="dropdown-content" tabindex="0">
+                        <template is="dom-repeat" items="[[payertype]]" as="payertype">
+                            <paper-item class="inputWidth">{{payertype.name}}</paper-item>
+                        </template>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="new-patient-card-footer">
+                <div class="new-patient-card-footer-left">
+                    <hs-save-button id="addPatient" on-tap="addPatient" dialog-dismiss></hs-save-button>
+                </div>
+                <div class="new-patient-card-footer-right">
+                    <hs-cancel-button dialog-dismiss></hs-cancel-button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        class HSNewPatient extends Polymer.Element {
+            static get is() { return 'hs-new-patient'; }
+            static get properties() {
+                return {
+                    importdate: {
+                        type: String
+                    },
+                    key: {
+                        type: String
+                    }
+                }
+            }
+
+            constructor() {
+                super()
+                function addZero(i) {
+                    if (i < 10) {
+                        i = "0" + i;
+                    }
+                    return i;
+                }
+                var myDate = new Date();
+                this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+            }
+
+
+            addPatient() {
+                var time = this.$.appointmentTime.value
+                var splitTime = time.split(':')
+                var splitAMPM = time.split(' ')
+                var splitTimeMin = time.split(':')
+                var splitMin = splitTimeMin[1].split(" ")
+                var hrs = parseInt(splitTime[0])
+                var min = splitMin[0]
+                var amPM = splitAMPM[1]
+                var myMilTime
+                var time = new Date()
+        var hrs = time.getHours()
+        var mins = time.getMinutes()
+        var myTime
+
+                var thisDate = new Date()
+                var newPatientTime = thisDate.toString()
+
+                function addZero(i) {
+                    if (i < 10) {
+                        i = "0" + i;
+                    }
+                    return i;
+                }
+                if (amPM === "PM" && hrs !== 12) {
+                    myMilTime = hrs + 12 + min
+                } else {
+                    myMilTime = addZero(hrs) + min
+                }
+
+                       if (hrs >= 12) {
+          myTime = hrs - 12 + ":" + addZero(mins) + " PM"
+        } else {
+          myTime = hrs + ":" + addZero(mins) + " AM"
+        }
+
+                
+
+                this.$.patients.ref.push({
+                    firstName: this.$.firstName.value,
+                    lastName: this.$.lastName.value,
+                    patientDOB: this.$.patientDOB.value,
+                    aptTime: this.$.appointmentTime.value,
+                    milTime: myMilTime,
+                    signInTime: myTime,
+                    primaryLocation: this.$.primaryLocation = "Lobby",
+                    primaryStatus: this.$.primaryStatus = "SIGNED IN",
+                    primaryStatuslabel: this.$.primaryStatuslabel = "SIGNED IN",
+                    providerName: this.$.providerName.value,
+                    payerType: this.$.payerType.value,
+                    roomLocation: 'NR',
+                    appointmentType: this.$.appointmentType.value,
+                    topRightClass: "top-right-frontdesk",
+                    grandparentStatus: "LOBBY",
+                    parentStatus: "FRONTDESK",
+                    statusChanges: [{
+                        primaryStatus: 'SCHEDULED',
+                        primaryStatuslabel: 'SCHEDULED',
+                        statusChangeTime: newPatientTime
+                    },
+                    {
+                        primaryStatus: 'SIGNED IN',
+                        primaryStatuslabel: 'SIGNED IN',
+                        statusChangeTime: newPatientTime
+                    }
+                    ]
+                })
+
+                this.$.firstName.value = null;
+                this.$.lastName.value = null;
+                this.$.appointmentTime.value = null;
+                // this.$.primaryStatus.value = null;
+                // this.$.primaryStatuslabel.value = null;
+                // this.$.secondaryStatus.value = null;
+                this.$.providerName.value = null;
+                this.$.payerType.value = null;
+                this.$.appointmentType.value = null;
+            }
+
+        }
+        window.customElements.define(HSNewPatient.is, HSNewPatient);
+    </script>
+</dom-module>

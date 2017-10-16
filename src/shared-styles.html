@@ -1,0 +1,155 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+
+<!-- shared styles for all views -->
+<dom-module id="shared-styles">
+  <template>
+    <style>
+      /* Color Template
+      Casting: #ff66ff /#fff
+      Provider: #2a9fd3/#fff
+      X-Ray: #FFE828 /#fff
+      Clinical: #2ad35f /#fff
+      Complement Colors: http://hexcolor16.com/2ad3b3
+    */
+
+      /* App Drawer */
+
+      app-drawer {
+        /* --app-drawer-content-container: {
+          box-shadow: 0 24px 38px 3px rgba(0, 0, 0, 0.14),
+                      0 9px 46px 8px rgba(0, 0, 0, 0.12),
+                      0 11px 15px -7px rgba(0, 0, 0, 0.4);
+          } */
+        --app-drawer-scrim-background: rgba(42, 211, 179, 0.5);
+      }
+
+      app-toolbar {
+        border-bottom: 1px solid #e2e2e2;
+      }
+      /* My-App */
+
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+
+      app-header {
+        color: #666;
+        background-color: #fff;
+      }
+
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: #666;
+        line-height: 40px;
+        text-align: middle;
+        outline: 0;
+      }
+
+      .drawer-list a.iron-selected {
+        color: #666;
+        font-weight: bold;
+      }
+      /* Branding */
+
+      .brandLogo {
+        height: 40px;
+      }
+
+      .brandName {
+        color: #fff;
+      }
+
+      .brand-box {
+        background-color: #2ad3b3;
+      }
+      /* User Profile */
+
+      .userProfileIcon {
+        margin-right: 55px;
+      }
+
+      .userProfileDropdown {
+        position: fixed;
+        top: 45px;
+        right: 40px;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+      /* Text Alignment */
+
+      .alignCenter {
+        text-align: center;
+      }
+
+      .floatLeft {
+        float: left;
+      }
+
+      .floatRight {
+        float: right;
+      }
+
+      .clearFloat {
+        clear: both;
+      }
+      /* Buttons */
+
+      paper-fab {
+        position: fixed;
+        bottom: 1em;
+        right: 3em;
+        z-index: 1000;
+        background-color: #2ad3b3;
+        color: white;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      }
+      /* New Patient Card - No Appointment */
+
+      .no-appointment {
+        background-color: #B7B7B7 !important;
+        color: #fff !important
+      }
+
+      .top-right-xray {
+        background-color: #FFE828 !important;
+      }
+      .top-right-frontdesk {
+        background-color: rgba(0, 0, 0, 0.52);
+      }
+      .top-right-checkout {
+        background-color: rgba(0, 0, 0, 0.52);
+      }
+      .top-right-provider {
+        background-color: #2a9fd3 !important;
+      }
+      .top-right-clinic {
+        background-color: #2ad35f !important;
+      }
+      .top-right-caster {
+        background-color: #ff66ff !important;
+      }
+      .top-right-lobby {
+        background-color: grey !important;
+      }
+    </style>
+  </template>
+</dom-module>

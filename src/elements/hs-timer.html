@@ -1,0 +1,51 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+
+<dom-module id="hs-timer">
+
+    <template>
+        <label id="minutes">{{minutes}}</label>
+    </template>
+
+    <script>
+        class HSTimer extends Polymer.Element {
+            static get is() {
+                return 'hs-timer';
+            }
+            static get properties() {
+                return {
+                    totalSeconds: {
+                        type: Number,
+                        value: 0
+                    },
+                    seconds: {
+                        type: Number,
+                        value: 0
+                    },
+                    minutes: {
+                        type: Number,
+                        value: 0
+                    }
+                }
+            }
+            constructor() {
+                super();
+                setInterval(this.setTime.bind(this), 1000)
+            }
+            setTime() {
+                this.totalSeconds++;
+                this.seconds = this.pad(this.totalSeconds % 60);
+                this.minutes = this.pad(parseInt(this.totalSeconds / 60));
+            }
+            pad(val) {
+                var valString = val + "";
+                if (valString.length < 2) {
+                    return "0" + valString;
+                } else {
+                    return valString;
+                }
+            }
+        }
+        window.customElements.define(HSTimer.is, HSTimer);
+    </script>
+</dom-module>

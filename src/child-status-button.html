@@ -1,0 +1,304 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/polymer/lib/mixins/gesture-event-listeners.html">
+
+
+
+
+<dom-module id="child-status-button">
+  <template>
+    <style include="healthspaces-styles">
+       :host {
+        display: block;
+      }
+
+      .xray {
+        background-color: #ffe828 !important;
+      }
+
+      .provider {
+        background-color: #2a9fd3 !important;
+      }
+      /*      .provider {
+        background-color: green;
+      }*/
+
+      .caster {
+        /* background-color: #ff66ff !important; */
+        background-color: #d35e2a !important;
+      }
+
+      .clinical {
+        /* background-color: #2ad35f !important; */
+        background-color: #ff66ff;
+      }
+      /* component common styles */
+      /* .child-status-button-wrapper {} */
+
+      #child-status-button-circle {
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        /*background-color: #fff;*/
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+
+    <!-- Get patients -->
+    <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}"></firebase-query>
+    <!-- <firebase-query id="patient" path="/patients/rockhill/{{importdate}}/{{patientkey}}" data="{{patients}}"></firebase-query> -->
+    <firebase-query id="status" path="/patients/rockhill/{{importdate}}/{{patientkey}}/statusChanges" data="{{status}}"></firebase-query>
+    <firebase-query id="provider" path="/providers/{{importdate}}" data="{{provider}}"></firebase-query>
+
+
+    <!-- Get Parent Status -->
+    <firebase-query id="parentstatusfrontdesk" path="/parentstatus/frontdesk" data="{{parentstatusfrontdesk}}"></firebase-query>
+    <firebase-query id="parentstatuscheckout" path="/parentstatus/checkout" data="{{parentstatuscheckout}}"></firebase-query>
+    <firebase-query id="parentstatusclinic" path="/parentstatus/clinic" data="{{parentstatusclinic}}"></firebase-query>
+    <firebase-query id="parentstatusprovider" path="/parentstatus/provider" data="{{parentstatusprovider}}"></firebase-query>
+    <firebase-query id="parentstatuscaster" path="/parentstatus/caster" data="{{parentstatuscaster}}"></firebase-query>
+    <firebase-query id="parentstatusxray" path="/parentstatus/xray" data="{{parentstatusxray}}"></firebase-query>
+
+    <div class="child-status-button-wrapper">
+      <div id="child-status-button-circle" class$="{{colorclass}}" on-tap="csb">
+        <h1>{{patient.primaryStatuslabel}}</h1>
+      </div>
+
+      <!-- Child Status Modal -->
+      <paper-dialog id="csb" with-backdrop style="text-align:center; width: 325px;">
+
+        <template is="dom-if" if="{{_equals('FRONTDESK', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatusfrontdesk]]" as='psfd'>
+            <button dialog-dismiss style="text-align:center; color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{psfd}}" on-tap="_selectedChildStatus">{{psfd.buttonlabel}}</button>
+          </template>
+        </template>
+
+        <template is="dom-if" if="{{_equals('CHECKOUT', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatuscheckout]]" as='psco'>
+            <button dialog-dismiss style="text-align:center; color: #fff; border: none; background-color: #d2d2d2; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{psco}}" on-tap="_selectedChildStatus">{{psco.buttonlabel}}</button>
+          </template>
+        </template>
+
+        <template is="dom-if" if="{{_equals('CLINICAL', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatusclinic]]" as="pscl">
+            <button dialog-dismiss style="text-align:center; color: #fff; border: none; background-color: #ff66ff; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{pscl}}" on-tap="_selectedChildStatus">{{pscl.buttonlabel}}</button>
+          </template>
+        </template>
+
+        <template is="dom-if" if="{{_equals('PROVIDER', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatusprovider]]" as="pspr">
+            <button dialog-dismiss style="text-align:center; color: #fff; border: none; background-color: #2a9fd3; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{pspr}}" on-tap="_selectedChildStatus">{{pspr.buttonlabel}}</button>
+          </template>
+        </template>
+
+        <template is="dom-if" if="{{_equals('XRAY', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatusxray]]" as="psxr">
+            <button dialog-dismiss style="text-align:center; color: #2e2e2e; border: none; background-color: #ffe828; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{psxr}}" on-tap="_selectedChildStatus">{{psxr.buttonlabel}}</button>
+          </template>
+        </template>
+
+        <template is="dom-if" if="{{_equals('CASTER', newparentstatus)}}">
+          <template is="dom-repeat" items="[[parentstatuscaster]]" as="psca">
+            <button dialog-dismiss style="text-align:center; color: #fff; border: none; background-color: #d35e2a; outline: 0; font-size: 28px; width: 300px; height: 64px;"
+              data="{{psca}}" on-tap="_selectedChildStatus">{{psca.buttonlabel}}</button>
+          </template>
+        </template>
+      </paper-dialog>
+    </div>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class ChildStatusButton extends Polymer.GestureEventListeners(Polymer.Element) {
+      static get is() {
+        return 'child-status-button';
+      }
+      static get properties() {
+        return {
+          patients: {
+            type: Object,
+            // Observer: '_whoHere'
+          },
+          patient: {
+            type: Object,
+            // observer: '_updateClass'
+          },
+          newparentstatus: {
+            type: String,
+            notify: true,
+            reflectToAttribute: true,
+            // observer: 'csb'
+          },
+          colorclass: {
+            type: String
+          },
+          importdate: {
+            type: String
+          },
+          patientkey: {
+            type: String
+          },
+          // Monitor Button Click if True and Close RoomView Modal
+          closeparentmodal: {
+            type: Boolean,
+            notify: true,
+            reflectToAttribute: true
+          },
+          nextroom2: {
+              type: String
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_updateColorClass(patient.*)'
+        ]
+      }
+
+      constructor() {
+        super()
+
+        function addZero(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        var myDate = new Date();
+        this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+      }
+
+      ready() {
+        super.ready()
+        this.$.csb.addEventListener('tap', e => {
+          this._csb()
+        });
+      }
+
+      csb() {
+
+        if (!this.newparentstatus) {
+          this.newparentstatus = this.patient.parentStatus
+        }
+        event.stopPropagation();
+        let body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.csb);
+        this.$.csb.open()
+      }
+
+      _selectedChildStatus() {
+
+          if (this.patient.primaryStatus === "PROVIDER IN ROOM"){
+          var myList = []
+          for (var i = 0; i < this.patients.length; i++) {
+              if (this.patients[i].providerName === this.patient.providerName && this.patients[i].primaryStatus === "WAITING FOR PROVIDER") {
+                  myList.push(this.patients[i])
+              }
+          }
+          var time = 0
+          for (var j = 0; j < myList.length; j++) {
+              var thisTime = parseInt(myList[j].milTime)
+              if (thisTime < time || time === 0) {
+                   time = myList[j].milTime
+                  this.nextroom2 = myList[j].roomLocation
+              }
+          }
+
+          var myProvider
+          for (var i = 0; i < this.provider.length; i++) {
+              if (this.provider[i].name === this.patient.providerName) {
+                  myProvider = this.provider[i]
+              }
+          }
+
+          var drKey = myProvider.$key
+          if(this.nextroom2){
+          this.$.provider.ref.child(drKey).update({
+              "nextroom": this.nextroom2
+          })
+      } else {
+          this.$.provider.ref.child(drKey).update({
+              "nextroom": ""
+          })
+      }
+}
+
+
+
+        if (!this.newparentstatus) {
+          this.newparentstatus = this.patient.parentStatus
+        }
+
+        let gs = event.target.data.grandparentstatus
+        let ps = event.target.data.parentstatus
+        let cs = event.target.data.name
+        let bl = event.target.data.buttonlabel
+        let key = this.patient.$key
+        this.patientkey = key
+        if (ps == "CHECKOUT") {
+          this.$.patients.ref.child(key).update({
+            "roomLocation": "NR"
+          })
+        }
+        this.$.patients.ref.child(key).update({
+          "grandparentStatus": gs,
+          "parentStatus": ps,
+          "primaryStatus": cs,
+          "primaryStatuslabel": bl
+        })
+        var timeStamp = new Date
+        var statusDate = timeStamp.toString()
+
+
+        this.$.status.ref.push({
+          "primaryStatus": cs,
+          "statusChangeTime": statusDate
+        })
+
+        this.newparentstatus = ps
+
+        // Close Room View in Patient Card and Pass to hs-patient-item
+        this.closeparentmodal = true
+
+        // this.$.patient.ref.push({ childStatus: childStatus }, { parentStatus: parentStatus }, { grandparentStatus: grandparentStatus })
+      }
+
+
+      _updateColorClass() {
+        if (this.patient.parentStatus) {
+          this.newparentstatus = this.patient.parentStatus
+          this.colorclass = this.patient.parentStatus.toLowerCase()
+        } else {
+          this.colorclass = 'no-patient'
+        }
+
+      }
+
+      //Check if Patient Status is equal to value being passed in
+      _equals(x, y) {
+        return x === y
+      }
+
+
+
+
+      //End Tag
+    }
+
+    window.customElements.define(ChildStatusButton.is, ChildStatusButton);
+  </script>
+</dom-module>

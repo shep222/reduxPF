@@ -1,0 +1,287 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/app-layout/app-grid/app-grid-style.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../src/shared-styles.html">
+<!-- Import Patient Items -->
+<link rel="import" href="hs-patient-item.html">
+<dom-module id="hs-patient-list">
+    <template>
+        <style include="shared-styles app-grid-style">
+             :host {
+                display: block;
+                --app-grid-columns: 5;
+                --app-grid-item-height: 100%;
+                --app-grid-gutter: 16px;
+            }
+
+            @media (max-width: 1600px) {
+                 :host {
+                    --app-grid-columns: 4;
+                    --app-grid-gutter: 16px;
+                }
+            }
+
+            @media (max-width: 1440px) {
+                 :host {
+                    --app-grid-columns: 3;
+                    --app-grid-gutter: 16px;
+                }
+            }
+
+            @media (max-width: 1280px) {
+                 :host {
+                    --app-grid-columns: 2;
+                    --app-grid-gutter: 16px;
+                }
+            }
+
+            @media (max-width: 960px) {
+                 :host {
+                    --app-grid-columns: 1;
+                    --app-grid-gutter: 16px;
+                }
+            }
+        </style>
+
+
+
+        <div class="app-grid">
+            <template is="dom-repeat" as="indv" items="{{patients}}" selecteddoctor="{{selecteddoctor}}" isselecteddoctor="{{isselecteddoctor}}"
+                observe="primaryStatus {{patients.appointmentType}}" filter="{{_filter(filterBy)}}" sort="{{_sortByAppointmentTime(patients)}}">
+                <hs-patient-item patient="{{indv}}" isselecteddoctor="{{isselecteddoctor}}" selecteddoctor="{{selecteddoctor}}"></hs-patient-item>
+            </template>
+        </div>
+    </template>
+    <script>
+        class HSPatientList extends Polymer.Element {
+            static get is() { return 'hs-patient-list'; }
+
+
+            static get properties() {
+                return {
+                    filterBy: {
+                        type: String,
+                        value: 'all'
+                    },
+                    selecteddoctor: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true
+                    },
+                    isselecteddoctor: {
+                        type: Boolean,
+                        reflectToAttribute: true,
+                        notify: true
+                    }
+                }
+            }
+
+
+            _filter(filterBy) {
+                return function (patients) {
+                    if (filterBy === 'all') { return true }
+
+                    // TODO ADD THE STATUS TO ARRAYS BASED ON PARENT STATUSES AND RUN A FOREACH CHECKING IF PATIENT STATUS IS ANY OF THEM , IF SO RETURN IF NOT F IT
+                    // TAKE A LOOK AT MY-APP.HTML'S TOGGLE ICON FUNCTIONS
+                    // var lobbyStatuses = ['REGISTRATION',  ]
+
+                    if (filterBy === this.selecteddoctor) {
+                        if (window.location.href.split('/').pop() == 'hs-all') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'SIGNED IN' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'REGISTRATION' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - COMPLETING FORMS' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'MANUAL ENTRY NEEDED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEGIN CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECK OUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR PROVIDER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR X-RAY' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEING X-RAYED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CLINICAL' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CASTER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'SCHEDULED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEGIN CHECKOUT'
+                        }
+
+                        // TODO: rethink for auth
+                        if (window.location.href.split('/').pop() == 'hs-lobby' || window.location.href.split('/').pop() == '') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'SIGNED IN' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'REGISTRATION' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - COMPLETING FORMS' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'MANUAL ENTRY NEEDED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEGIN CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECK OUT'
+                        }
+
+                        if (window.location.href.split('/').pop() == 'hs-frontdesk') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'SIGNED IN' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'REGISTRATION' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - COMPLETING FORMS' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'MANUAL ENTRY NEEDED'
+                        }
+
+                        if (window.location.href.split('/').pop() == 'hs-checkout') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEGIN CHECKOUT' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECK OUT'
+                        }
+                        if (window.location.href.split('/').pop() == 'hs-clinic') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR PROVIDER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR X-RAY' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEING X-RAYED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CLINICAL' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CASTER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE'
+                        }
+                        if (window.location.href.split('/').pop() == 'hs-clinical') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CLINICAL' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CLINICAL COMPLETE'
+                        }
+
+                        if (window.location.href.split('/').pop() == 'hs-provider') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR PROVIDER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER IN ROOM'
+                                || patients.providerName === this.selecteddoctor && patients.primaryStatus === 'PROVIDER COMPLETE'
+                        }
+                        if (window.location.href.split('/').pop() == 'hs-xray') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR X-RAY' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'BEING X-RAYED' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'X-RAY COMPLETE'
+                        }
+                        if (window.location.href.split('/').pop() == 'hs-casting') {
+                            return patients.providerName === this.selecteddoctor && patients.primaryStatus === 'WAITING FOR CASTER' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER IN ROOM' ||
+                                patients.providerName === this.selecteddoctor && patients.primaryStatus === 'CASTER COMPLETE'
+                        }
+
+                    }
+
+                    if (filterBy === 'lobby') {
+                        return patients.primaryStatus === 'SIGNED IN'
+                            || patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE'
+                            || patients.primaryStatus === 'CHECKED IN - COMPLETING FORMS'
+                            || patients.primaryStatus === 'REGISTRATION'
+                            || patients.primaryStatus === 'MANUAL ENTRY NEEDED'
+
+                            || patients.primaryStatus === 'CLINICAL COMPLETE'
+                            || patients.primaryStatus === 'X-RAY COMPLETE'
+                            || patients.primaryStatus === 'CASTER COMPLETE'
+                            || patients.primaryStatus === 'PROVIDER COMPLETE'
+
+                            || patients.primaryStatus === 'CHECKOUT'
+                            || patients.primaryStatus === 'BEGIN CHECKOUT'
+                            || patients.primaryStatus === 'CHECK OUT'
+
+
+                    } if (filterBy === 'frontdesk') {
+                        return patients.primaryStatus === 'SIGNED IN'
+                            || patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE'
+                            || patients.primaryStatus === 'CHECKED IN - COMPLETING FORMS'
+                            || patients.primaryStatus === 'REGISTRATION'
+                            || patients.primaryStatus === 'MANUAL ENTRY NEEDED'
+                    } if (filterBy === 'checkout') {
+
+                        return patients.primaryStatus === 'CHECK OUT'
+                            || patients.primaryStatus === 'BEGIN CHECKOUT'
+                            || patients.primaryStatus === 'CHECKOUT'
+
+                            || patients.primaryStatus === 'CLINICAL COMPLETE'
+                            || patients.primaryStatus === 'X-RAY COMPLETE'
+                            || patients.primaryStatus === 'CASTER COMPLETE'
+                            || patients.primaryStatus === 'PROVIDER COMPLETE'
+
+
+                    } if (filterBy === 'clinic') {
+                        return patients.primaryStatus === 'WAITING FOR PROVIDER'
+                            || patients.primaryStatus === 'PROVIDER IN ROOM'
+                            || patients.primaryStatus === 'WAITING FOR X-RAY'
+                            || patients.primaryStatus === 'PROVIDER COMPLETE'
+                            || patients.primaryStatus === 'BEING X-RAYED'
+                            || patients.primaryStatus === 'X-RAYED COMPLETE'
+                            || patients.primaryStatus === 'WAITING FOR CLINICAL'
+                            || patients.primaryStatus === 'CLINICAL IN ROOM'
+                            || patients.primaryStatus === 'CLINICAL COMPLETE'
+                            || patients.primaryStatus === 'WAITING FOR CASTER'
+                            || patients.primaryStatus === 'CASTER IN ROOM'
+                            || patients.primaryStatus === 'CASTER COMPLETE'
+                            || patients.primaryStatus === 'WAITING FOR EXTENDER'
+                            || patients.primaryStatus === 'EXTENDER IN ROOM'
+                            || patients.primaryStatus === 'EXTENDER COMPLETE'
+                            || patients.primaryStatus === 'CHECKED IN - FORMS COMPLETE'
+                            || patients.primaryStatus === 'X-RAY COMPLETE'
+                    } if (filterBy === 'clinical') {
+                        return patients.primaryStatus === 'WAITING FOR CLINICAL'
+                            || patients.primaryStatus === 'CLINICAL IN ROOM'
+                            // || patients.primaryStatus === 'CLINICAL COMPLETE'
+                    } if (filterBy === 'provider') {
+                        return patients.primaryStatus === 'WAITING FOR PROVIDER'
+                            || patients.primaryStatus === 'PROVIDER IN ROOM'
+                            // || patients.primaryStatus === 'PROVIDER COMPLETE'
+                    } if (filterBy === 'xray') {
+                        return patients.primaryStatus === 'WAITING FOR X-RAY'
+                            || patients.primaryStatus === 'BEING X-RAYED'
+                            // || patients.primaryStatus === 'X-RAYED COMPLETE'
+                    } if (filterBy === 'casting') {
+                        return patients.primaryStatus === 'WAITING FOR CASTER'
+                            || patients.primaryStatus === 'CASTER IN ROOM'
+                            // || patients.primaryStatus === 'CASTER COMPLETE'
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            _sortByAppointmentTime(val) {
+                let pa = Array.from(val)
+
+                return function (a, b) {
+                    if (a.milTime && b.milTime) {
+                        if (a.milTime == b.milTime) return 0;
+                        return a.milTime < b.milTime ? -1 : 1;
+                    }
+                }
+            }
+        }
+        window.customElements.define(HSPatientList.is, HSPatientList);
+    </script>
+</dom-module>

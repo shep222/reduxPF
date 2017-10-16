@@ -1,0 +1,394 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
+
+<!-- Firebase Query -->
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<!-- Import Patient List-->
+<link rel="import" href="elements/hs-patient-list.html">
+
+<dom-module id="hs-settings">
+    <template>
+        <!-- check for user, will use this info to toggle showing patients in the hs-patient-list template-->
+        <firebase-auth id="auth" user="{{user}}" status-known="{{statusKnown}}" provider="google">
+        </firebase-auth>
+
+        <style include="shared-styles app-grid-style">
+             :host {
+                display: block;
+                margin-top: 24px;
+                /* padding: 10px; */
+                --app-grid-columns: 2;
+                --app-grid-gutter: 10px;
+                --app-grid-item-height: 100%;
+            }
+
+            .paper-font-display4 {
+                @apply --paper-font-display4
+            }
+
+            .paper-font-display1 {
+                @apply --paper-font-display1
+            }
+
+            @media (max-width: 1280px) {
+                 :host {
+                    --app-grid-columns: 1;
+                    --app-grid-gutter: 10px;
+                    --app-grid-item-height: 100%;
+                }
+            }
+
+            .settingsCard {
+                color: #757575;
+                border-radius: 5px;
+                background-color: #fff;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+                0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            }
+
+            .settingsCardHeader {
+                background-color: #f7f7f7;
+                padding: 10px;
+                border-bottom: 1px solid #d2d2d2;
+            }
+
+            .settingsCardBody {
+                padding: 16px;
+            }
+
+            .settingsCardFooter {
+                background-color: #f7f7f7;
+                border-top: 1px solid #d2d2d2;
+                padding: 16px;
+            }
+
+            .settingsCardFooter paper-button {
+                background-color: #fff;
+                width: 250px;
+            }
+        </style>
+
+        <firebase-query id="doctors" path="/doctors" data="{{doctors}}">
+        </firebase-query>
+
+        <firebase-query id="providers" path="/providers/{{importdate}}" data="{{providers}}">
+        </firebase-query>
+
+        <firebase-query id="location" path="/location" data="{{location}}">
+        </firebase-query>
+
+        <firebase-query id="appointmenttype" path="/appointmenttype" data="{{appointmenttype}}">
+        </firebase-query>
+
+        <firebase-query id="primarystatus" path="/primarystatus" data="{{primarystatus}}">
+        </firebase-query>
+
+        <firebase-query id="secondaryStatus" path="/secondarystatus" data="{{secondarystatus}}">
+        </firebase-query>
+        <firebase-query id="payertype" path="/payertype" data="{{payertype}}">
+        </firebase-query>
+
+        <!-- Import Data -->
+        <firebase-query id="getPatients" path="/patientImport/rockhill/10-06-2017" data="{{myPatients}}">
+        </firebase-query>
+        <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}">
+        </firebase-query>
+
+
+        <div class="app-grid">
+            <!-- Add New Primary Location -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="assignment"></iron-icon> Primary Status
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newPrimarystatus" label="Add New Primary Status..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addPrimarystatus" on-tap="addPrimarystatus">Add Primary Status</paper-button>
+                </div>
+            </div> -->
+
+            <!-- Add New Secondary Status -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="assignment"></iron-icon> Secondary Status
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newSecondarystatus" label="Add New Secondary Status..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addSecondaryStatus" on-tap="addSecondaryStatus">Add Secondary Status</paper-button>
+                </div>
+            </div> -->
+
+            <!-- Add New Provider -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="assignment-ind"></iron-icon> Provider Name
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newDr" label="Add New Provider Name..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addDr" on-tap="addDr">Add Provider</paper-button>
+                </div>
+            </div> -->
+
+
+            <!-- Add New Room Location -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="home"></iron-icon> Room Location
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newLocation" label="Add New Room Location..."></paper-input>
+                </div> -->
+            <!-- <div>
+                    <paper-dropdown-menu id="mainLocation" label="Main Location">
+                        <paper-listbox slot="dropdown-content" class="dropdown-content" selected="0">
+                            <template is="dom-repeat" items="[[mainLocation]]" as="mainLocation">
+                                <paper-item>{{mainLocation.name}}</paper-item>
+                            </template>
+                        </paper-listbox>
+                    </paper-dropdown-menu>
+                </div> -->
+            <!-- <div class="settingsCardFooter">
+                    <paper-button raised id="addLocation" on-tap="addLocation">Add Location</paper-button>
+                </div>
+            </div> -->
+            <!-- This was to add three main Locations
+            <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="home"></iron-icon> Room Location
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newmainLocation" label="Add New Main Room Location..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addmainLocation" on-tap="addmainLocation">Add Location</paper-button>
+                </div>
+            </div> -->
+
+            <!-- Add New Payer Type -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="class"></iron-icon> Payer Type
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newPayertype" label="Add New Payer Type..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addPayertype" on-tap="addPayertype">Add Payer Type</paper-button>
+                </div>
+            </div> -->
+
+            <!-- Add New Payer Type -->
+            <!-- <div class="settingsCard">
+                <div class="settingsCardHeader">
+                    <div class="paper-font-display1">
+                        <iron-icon class="iconPatientName" icon="class"></iron-icon> Appointment Type
+                    </div>
+                </div>
+                <div class="settingsCardBody">
+                    <paper-input id="newAppointmenttype" label="Add New Appointment Type..."></paper-input>
+                </div>
+                <div class="settingsCardFooter">
+                    <paper-button raised id="addAppointmenttype" on-tap="addAppointmenttype">Add Appointment Type</paper-button>
+                </div>
+            </div> -->
+
+            <template is="dom-if" if="[[user]]">
+                <div class="settingsCard">
+                    <div class="settingsCardHeader">
+                        <div class="paper-font-display1">
+                            <iron-icon class="iconPatientName" icon="cloud-queue"></iron-icon> Import Data
+                        </div>
+                    </div>
+                    <div class="settingsCardBody">
+                        <p>Manual Update Patient List in PatientFlow</p>
+                    </div>
+                    <div class="settingsCardFooter">
+                        <paper-button raised on-tap="importData">Import Data</paper-button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+    </template>
+
+    <script>
+        class HSSettings extends Polymer.Element {
+            static get is() { return 'hs-settings'; }
+            static get properties() {
+                return {
+                    patients: {
+                        type: Object
+                    },
+                    importdate: {
+                        type: String
+                    }
+                }
+            }
+            addDr() {
+                this.$.doctors.ref.push({
+                    name: this.$.newDr.value
+                })
+                this.$.newDr.value = null;
+            }
+            addLocation() {
+                this.$.location.ref.push({
+                    name: this.$.newLocation.value,
+                    available: true,
+                    //mainLocation: this.$.mainLocation.value
+                })
+                this.$.newLocation.value = null;
+                // this.$.mainLocation.value = null;
+            }
+            // This was to add the three main Locations
+            //addmainLocation() {
+            //     this.$.mainLocation.ref.push({
+            //         name: this.$.newmainLocation.value
+            //     })
+            //     this.$.newmainLocation.value = null;
+            // }
+            addPrimarylocation() {
+                this.$.primarylocation.ref.push({
+                    name: this.$.newPrimarylocation.value
+                })
+                this.$.newPrimarylocation.value = null;
+            }
+            addPrimarystatus() {
+                this.$.primarystatus.ref.push({
+                    name: this.$.newPrimarystatus.value
+                })
+                this.$.newPrimarystatus.value = null;
+            }
+            addSecondaryStatus() {
+                this.$.secondaryStatus.ref.push({
+                    name: this.$.newSecondarystatus.value
+                })
+                this.$.newSecondarystatus.value = null;
+            }
+            addPayertype() {
+                this.$.payertype.ref.push({
+                    name: this.$.newPayertype.value
+                })
+                this.$.newPayertype.value = null;
+            }
+            addAppointmenttype() {
+                this.$.appointmenttype.ref.push({
+                    name: this.$.newAppointmenttype.value
+                })
+                this.$.newAppointmenttype.value = null;
+            }
+            importData(myPatients, patients) {
+                function addZero(i) {
+                    if (i < 10) {
+                        i = "0" + i;
+                    }
+                    return i;
+                }
+                var myDate = new Date();
+                this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+                for (var i = 0; i < this.myPatients.length; i++) {
+                    var exists = false;
+                    // Converts Military Time to Standard Time
+                    var time = this.myPatients[i].appt_time;
+                    var hours = parseInt(time.substring(0, 2))
+                    var minutes = parseInt(time.substring(2, 4))
+                    var newTime
+                    var thisDate = new Date()
+                    var newPatientTime = thisDate.toString()
+                    if (hours > 12) {
+                        hours = hours % 12
+                    }
+                    if (parseInt(time) >= 1200) {
+                        newTime = hours + ":" + addZero(minutes) + " PM"
+                    } else {
+                        newTime = hours + ":" + addZero(minutes) + " AM"
+                    }
+                    for (var j = 0; j < this.patients.length; j++) {
+                        if (this.myPatients[i].acctno === this.patients[j].pID && this.myPatients[i].appt_date === this.patients[j].appDate) {
+                            exists = true
+                        }
+                    }
+                    if (exists === false) {
+                        this.$.patients.ref.push({
+                            pID: this.myPatients[i].acctno,
+                            appDate: this.myPatients[i].appt_date,
+                            appointmentType: this.myPatients[i].encdesc,
+                            milTime: this.myPatients[i].appt_time,
+                            aptTime: newTime,
+                            firstName: this.myPatients[i].patfname,
+                            lastName: this.myPatients[i].patlname,
+                            payerType: this.myPatients[i].insclassdesc,
+                            primaryStatus: "SCHEDULED",
+                            providerName: this.myPatients[i].provname,
+                            primaryStatuslabel: "SCHEDULED",
+                            roomLocation: "NR",
+                            secondaryStatus: null,
+                            patientDOB: this.myPatients[i].patdob,
+                            grandparentStatus: "LOBBY",
+                            parentStatus: "FRONTDESK",
+
+                            statusChanges: [{
+                                primaryStatus: 'SCHEDULED',
+                                statusChangeTime: newPatientTime
+                            }
+                        ],
+                            topRightClass: "top-right-frontdesk"
+                        })
+                    }
+                }
+                for (var k = 0; k < this.myPatients.length; k++) {
+                    var providerExists = false
+                    for (var l = 0; l < this.providers.length; l++) {
+                        if (this.providers[l].name === this.myPatients[k].provname) {
+                            providerExists = true
+                        }
+                    }
+
+                    if (providerExists === false) {
+                        this.$.providers.ref.push({
+                            name: this.myPatients[k].provname
+                        })
+                    }
+                }
+            }
+        }
+        window.customElements.define(HSSettings.is, HSSettings);
+    </script>
+</dom-module>

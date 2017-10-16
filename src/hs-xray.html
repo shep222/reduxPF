@@ -1,0 +1,102 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
+<link rel="import" href="shared-styles.html">
+
+<!-- Firebase Query -->
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
+
+<!-- Import Patient List-->
+<link rel="import" href="elements/hs-patient-list.html">
+
+<dom-module id="hs-xray">
+  <template>
+    <firebase-auth id="auth" user="{{user}}" status-known="{{statusKnown}}" provider="google">
+    </firebase-auth>
+
+    <!-- Firebase Query -->
+    <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}">
+    </firebase-query>
+
+    <style include="shared-styles app-grid-style">
+       :host {
+        display: block;
+        padding: 10px;
+      }
+    </style>
+
+    <template is="dom-if" if="[[user]]">
+
+      <template is="dom-if" selecteddoctor="{{selecteddoctor}}" patients="{{patients}}" isselecteddoctor="{{isselecteddoctor}}"
+        if="{{isselecteddoctor}}">
+        <hs-patient-list isselecteddoctor="{{isselecteddoctor}}" selecteddoctor="{{selecteddoctor}}" patients="{{patients}}" filter-by="xray"></hs-patient-list>
+      </template>
+
+      <!-- TODO CANT DELETE THIS PATIENT LIST -->
+      <hs-patient-list style="display: none" isselecteddoctor="{{isselecteddoctor}}" patients="{{patients}}" filter-by="xray"></hs-patient-list>
+
+      <template is="dom-if" isselecteddoctor="{{isselecteddoctor}}" patients="{{patients}}" selecteddoctor="{{selecteddoctor}}"
+        if="[[selecteddoctor]]">
+        <hs-patient-list isselecteddoctor="{{isselecteddoctor}}" selecteddoctor="{{selecteddoctor}}" patients="{{patients}}" filter-by="{{selecteddoctor}}"></hs-patient-list>
+      </template>
+    </template>
+
+  </template>
+
+  <script>
+    class HSXray extends Polymer.Element {
+      static get is() { return 'hs-xray'; }
+
+      static get properties() {
+        return {
+          patients: {
+            type: Object,
+            value: ''
+          },
+          importdate: {
+            type: String
+          },
+          selecteddoctor: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true,
+            value: ""
+          },
+          isselecteddoctor: {
+            type: Boolean,
+            reflectToAttribute: true,
+            notify: true
+          }
+        }
+      }
+
+      constructor() {
+        super()
+        function addZero(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        var myDate = new Date();
+        this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+      }
+
+    }
+
+    window.customElements.define(HSXray.is, HSXray);
+  </script>
+</dom-module>

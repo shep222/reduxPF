@@ -1,0 +1,122 @@
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="my-login.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+
+
+
+<dom-module id="login-screen">
+    <template>
+        <firebase-auth id="auth" user="{{user}}" status-known="{{statusKnown}}" provider="google">
+        </firebase-auth>
+        <style include="shared-styles app-grid-style">
+             :host {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                min-height: 100vh;
+                background-color: #f4f4f4;
+                z-index: 99999
+            }
+
+            .login-container-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100vw;
+                /*background-color: green;*/
+                height: calc(100vh - 64px);
+                text-align: center;
+                font-size: calc(10px + .5vw);
+            }
+
+            .login-container {
+                display: flex;
+                text-align: center;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 50vh;
+                width: 80vw;
+                background-color: white;
+                padding: 10px;
+                box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+                0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                0 3px 1px -2px rgba(0, 0, 0, 0.2);
+            }
+
+            .login-page-login-button {
+                background-color: #2AD3B3;
+                color: white;
+                min-height: 8vh;
+                margin: 10px;
+            }
+
+            paper-input {
+                margin-bottom: 20px;
+            }
+
+            h1 {
+                margin-top: 0;
+            }
+        </style>
+        <app-toolbar class="brand-box"><img class="brandLogo" src="../images/HealthSpacesTransparent_Icon2.png" />&nbsp;<span class="brandName">PatientFlow</span></app-toolbar>
+
+        <div class="login-container-container">
+            <div class="login-container">
+                <h1 class="login-message" id="loginMessage">Please Log In</h1>
+                <paper-input id="userEmail" label="Enter Username">
+                    <div id="emailSuffix" slot="suffix" style="opacity: 0; width: 1px">@gmail.com</div>
+                </paper-input>
+
+                <paper-input id="userPassword" label="Enter Password" type="password"></paper-input>
+
+                <paper-button class="login-page-login-button" raised on-tap="login">Login</paper-button>
+            </div>
+        </div>
+    </template>
+    <script>
+        class LoginScreen extends Polymer.Element {
+            static get is() { return 'login-screen' }
+
+            static get properties() {
+                return {
+                    user: {
+                        type: Object
+                    },
+                    statusKnown: {
+                        type: Object
+                    }
+                };
+            }
+
+            login() {
+                let userEmail = this.$.userEmail.value + this.$.emailSuffix.textContent
+                let userPassword = this.$.userPassword.value
+                return this.$.auth.signInWithEmailAndPassword(userEmail, userPassword)
+                    .then((user) => {
+                        this.$.loginMessage.textContent = "You must be logged in to view this page."
+                        this.resetForm()
+                    })
+                    .catch((error) => {
+                        this.$.loginMessage.textContent = "Please Enter Correct Login Information"
+                        this.resetForm()
+
+                    })
+                // this line enables the creation of users based on the form values
+                // return this.$.auth.createUserWithEmailAndPassword(userEmail, userPassword)
+            }
+
+            logout() {
+                return this.$.auth.signOut()
+            }
+
+            resetForm() {
+                this.$.userEmail.value = ''
+                this.$.userPassword.value = ''
+            }
+        }
+        window.customElements.define(LoginScreen.is, LoginScreen);
+    </script>
+</dom-module>

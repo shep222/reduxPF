@@ -1,0 +1,590 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../src/shared-styles.html">
+<!-- Import Patient Edit -->
+<link rel="import" href="hs-patient-edit.html">
+<!-- <link rel="import" href="hs-roomview.html"> -->
+<link rel="import" href="../room-view.html">
+<link rel="import" href="hs-timer.html">
+
+<dom-module id="hs-patient-item">
+  <template>
+    <style include="shared-styles">
+       :host {
+
+        --paper-input-container-underline: {
+          display: none;
+        }
+        --paper-font-subhead: {
+          font-size: 32px;
+          --primary-text-color: #fff;
+          text-align: center;
+          padding-bottom: 10px;
+        }
+
+        --paper-dropdown-menu-icon: {
+          visibility: hidden;
+        }
+      }
+
+      #patient-card {
+        @apply --layout-vertical;
+        background-color: #fff;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12),
+        0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      #patient-card-header {
+        height: 64px;
+        background-color: #f7f7f7;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        text-transform: uppercase;
+        border-bottom: 1px solid #eaeaea;
+      }
+
+      #patient-card-header h3 {
+        padding: 0;
+        margin: 0;
+        color: rgba(0, 0, 0, 0.87)
+      }
+
+      #patient-card-header-left {
+        width: 20%;
+        height: 64px;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+      /*#providerName {
+        height: 64px;
+        border-radius: 0px;
+        margin: 0px;
+        background-color: rgba(0, 0, 0, 0.12);
+        color: #666;
+      }*/
+
+      .provider-box-default-value {
+        height: 64px;
+        border-radius: 0px;
+        margin: 0px;
+        background-color: #e2e2e2;
+        color: #545454;
+        /* background-color: rgba(0, 0, 0, 0.12); */
+        /* color: #666; */
+      }
+      .provider-box-not-default-value {
+        height: 64px;
+        border-radius: 0px;
+        margin: 0px;
+        background-color: #545454;
+        color: #e2e2e2;
+        /* background-color: rgba(0, 0, 0, 0.12); */
+        /* color: #666; */
+      }
+
+      .providerNameNotSelected {
+        height: 64px;
+        border-radius: 0px;
+        margin: 0px;
+        background-color: #e2e2e2;
+        color: #545454;
+        /* background-color: rgba(0, 0, 0, 0.12); */
+        /* color: #666; */
+
+      }
+
+      .providerNameSelected {
+        height: 64px;
+        border-radius: 0px;
+        margin: 0px;
+        background-color: #545454;
+        color: #e2e2e2;
+        /* background-color: #666;
+        color: #fff; */
+      }
+
+      #patient-card-header-middle {
+        width: 60%;
+        text-align: center;
+      }
+
+      #patient-card-header-right {
+        height: 64px;
+        width: 20%;
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      #patient-card-header-right h1 {
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline;
+        width: 25px;
+      }
+
+      #patient-card-content {
+        @apply --layout-horizontal;
+        @apply --layout-center;
+        cursor: pointer;
+      }
+
+      #patient-card-content-left {
+        width: 50%;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      #patient-card-content-right {
+        width: 50%;
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      #patient-card-content-left h1 {
+        font-size: 60px;
+        padding-right: 16px;
+        margin: 0;
+        color: rgba(0, 0, 0, 0.54);
+      }
+
+      /* #patient-card-timer paper-button {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      } */
+
+      #patient-card-status {
+        width: 50%;
+        margin-left: -10%;
+        padding-left: 10px;
+        text-align: left;
+        background-color: #fff;
+        color: rgba(0, 0, 0, 0.54);
+
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+      }
+
+      #patient-card-status paper-button {
+        width: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      #patient-card-footer {
+        height: 64px;
+        background-color: #f7f7f7;
+        border-top: 1px solid #eaeaea;
+        color: rgba(0, 0, 0, 0.54);
+        @apply --layout-horizontal;
+        @apply --layout-center;
+      }
+
+      #patient-card-footer-left {
+        height: 64px;
+        padding-left: 16px;
+        background-color: #f7f7f7;
+        color: rgba(0, 0, 0, 0.54);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+        width: 50%;
+        border-right: 1px solid #ddd;
+        font-size: 22px;
+      }
+
+      #patient-card-footer-right {
+        height: 64px;
+        padding-right: 16px;
+        background-color: #f7f7f7;
+        color: rgba(0, 0, 0, 0.54);
+        @apply --layout-horizontal;
+        @apply --layout-center-center;
+        width: 50%;
+        font-size: 22px;
+      }
+
+      .xray {
+        background-color: #ffe828 !important;
+      }
+
+      .provider {
+        background-color: #2a9fd3 !important;
+      }
+      /*      .provider {
+        background-color: green;
+      }*/
+
+      .caster {
+        background-color: #d35e2a !important;
+      }
+
+      .clinical {
+        background-color: #ff66ff !important;
+      }
+
+      .warningTime {
+        border: 2px solid red;
+      }
+
+      .warningStatus {
+        border: 2px solid red;
+      }
+
+      .warningOverallTime {
+        color: red !important;
+      }
+
+      .warningStatusTime {
+        color: red !important;
+      }
+
+      .clickable {
+        cursor: pointer;
+      }
+    </style>
+
+    <firebase-query id="location" path="/location" data="{{location}}">
+    </firebase-query>
+
+    <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}">
+    </firebase-query>
+
+    <!-- Patient Card -->
+    <div id="patient-card" class$="{{patient.appointmentType}} {{overallClass}} {{statusClass}}">
+
+      <!-- Patient Card Header -->
+      <div id="patient-card-header">
+
+        <!-- Patient Header Left -->
+        <div id="patient-card-header-left">
+          <!-- <template is="dom-if" if="{{_equalTo()}}">
+              <paper-button class="provider-box-not-default-value" id="providerName" on-tap="_setSelectedDoctor">{{providerInitials}}</paper-button>
+          </template>
+          <template is="dom-if" if="{{!_equalTo(null)}}">
+              <paper-button class="provider-box-default-value" id="providerName" on-tap="_setSelectedDoctor">{{providerInitials}}</paper-button>
+          </template> -->
+
+          <paper-button class="provider-box-default-value" id="providerName" on-tap="_setSelectedDoctor">{{providerInitials}}</paper-button>
+        </div>
+
+        <!-- Patient Header Middle -->
+        <div id="patient-card-header-middle">
+          <paper-button class="patient-details-modal" on-tap="patientDetails">
+            <h3>
+              <span class="patientFirstName">{{patient.firstName}}</span>
+              <br/>
+              <span class="patientLastName">{{patient.lastName}}</span>
+            </h3>
+          </paper-button>
+        </div>
+
+        <!-- Patient Header Right-->
+        <div id="patient-card-header-right" class$="{{colorclass}}">
+          <paper-dropdown-menu label="" id="roomLocation" on-tap="_getAvailableRooms" style="width: 1px;">
+            <paper-listbox slot="dropdown-content" class="dropdown-content" selected="{{patient.roomLocation}}" attr-for-selected="value">
+              <template is="dom-repeat" items="{{location}}" as="location">
+                <template is="dom-if" if="{{location.available}}">
+                  <paper-item value="{{location.name}}">{{location.name}}</paper-item>
+                </template>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <h1 class="clickable" style="width: 100%" on-tap="_openRoomMenu">{{patient.roomLocation}}</h1>
+        </div>
+      </div>
+
+      <paper-button on-tap="patientStatus">
+      <div id="patient-card-content">
+        <!-- Patient Card Timer -->
+        <div id="patient-card-content-left">
+            <h1 class$="{{statusTimeClass}}">{{statusTime}}</h1>
+        </div>
+        <!-- Patient Card Status -->
+        <div id="patient-card-content-right" class$="{{patient.appointmentType}}">
+            <h3>{{patient.primaryStatuslabel}}</h3>
+        </div>
+      </div>
+    </paper-button>
+
+      <!-- Patient Card Footer -->
+      <div id="patient-card-footer">
+        <div id="patient-card-footer-left">
+          <h3>
+            <h3 class$="{{overallTimeClass}}">{{overAllTime}}</h3>
+          </h3>
+        </div>
+        <div id="patient-card-footer-right">
+          <h3>{{patient.aptTime}}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add New Patient Modal -->
+    <paper-dialog with-backdrop id="patientDetails">
+      <!-- New Patient Card Input -->
+      <paper-dialog-scrollable>
+        <hs-patient-edit patient="{{patient}}"></hs-patient-edit>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <paper-dialog with-backdrop id="patientStatusTimer" style="width: 350px; height: 400px; background-color: #d2d2d2;">
+      <!-- New Patient Card Input -->
+      <paper-dialog-scrollable>
+        <!-- <hs-roomview patient="{{patient}}"></hs-roomview> -->
+        <room-view patient="{{patient}}" closeparentmodal="{{closeparentmodal}}"></room-view>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <paper-dialog with-backdrop id="patientStatus" style="width: 350px; height: 400px; background-color: #d2d2d2;">
+      <!-- New Patient Card Input -->
+      <paper-dialog-scrollable>
+        <!-- <hs-roomview patient="{{patient}}"></hs-roomview> -->
+        <room-view patient="{{patient}}" closeparentmodal="{{closeparentmodal}}"></room-view>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+  </template>
+  <script>
+    class HSPatientItem extends Polymer.Element {
+      static get is() { return 'hs-patient-item'; }
+
+      static get properties() {
+        return {
+          patient: {
+            type: Object
+          },
+          statusTime: {
+            type: Number,
+            value: 0
+          },
+          overAllTime: {
+            type: Number,
+            value: 0
+          },
+          statusClass: {
+            type: String,
+            value: ''
+          },
+          overallClass: {
+            type: String,
+            value: ''
+          },
+          overallTimeClass: {
+            type: String,
+            value: ''
+          },
+          statusTimeClass: {
+            type: String,
+            value: ''
+          },
+          selecteddoctor: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true,
+            value: null
+          },
+          providerInitials: {
+            type: String,
+            notify: true
+          },
+          isselecteddoctor: {
+            type: Boolean,
+            reflectToAttribute: true,
+            notify: true,
+            value: true
+          },
+          importdate: {
+            type: String
+          },
+          colorclass: {
+            type: String
+          },
+          isProviderFiltered: {
+            type: Boolean,
+            value: false,
+            observer: '_trueFalse'
+          },
+          closeparentmodal: {
+            type: Boolean,
+            notify: true,
+            reflectToAttribute: true,
+            value: false,
+            observer: '_closeParent'
+          }
+        };
+      }
+      static get observers() {
+        return [
+          '_updateColorClass(patient.*)'
+        ]
+      }
+
+      constructor() {
+        super()
+        this._getImportDate()
+        setInterval(this.getStatutsTime.bind(this), 1000)
+        setInterval(this.checkTime.bind(this), 1000)
+        setInterval(this.getProviderInitials.bind(this), 1000)
+      }
+
+      _equalTo() {
+        if (this.isProviderFiltered===true) {
+          return true
+        }
+        else {
+          return null
+        }
+      }
+
+      _trueFalse() {
+        if (this.isProviderFiltered === true) {
+          this.isProviderFiltered = false
+          // this._setSelectedDoctor()
+        }
+        // else {
+        //   this.isProviderFiltered = true
+
+        // }
+      }
+
+      _closeParent() {
+        if (this.closeparentmodal == true) {
+          this.$.patientStatus.close()
+          this.closeparentmodal = false
+        }
+      }
+
+      patientDetails() {
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.patientDetails);
+        this.$.patientDetails.open();
+      }
+
+      getStatutsTime() {
+        var status = Object.values(this.patient.statusChanges)
+        var currentTime = new Date()
+        var statusTimeStart = new Date(status[status.length - 1].statusChangeTime)
+        var overallStartTime;
+
+        if (status[1]) {
+          overallStartTime = new Date(status[1].statusChangeTime)
+        } else {
+          overallStartTime = 0
+        }
+
+        if (status[1]) {
+          this.statusTime = parseInt((currentTime.getTime() - statusTimeStart.getTime()) / 60000)
+          this.overAllTime = parseInt((currentTime.getTime() - overallStartTime.getTime()) / 60000)
+        } else {
+          this.statusTime = 0
+          this.overAllTime = 0
+        }
+      }
+
+      checkTime() {
+        if (this.statusTime > 10) {
+          this.statusClass = "warningStatus"
+          this.statusTimeClass = "warningStatusTime"
+        } else {
+          this.statusClass = ""
+          this.statusTimeClass = ""
+        }
+
+        if (this.overAllTime > 45) {
+          this.overallClass = "warningTime"
+          this.overallTimeClass = "warningOverallTime"
+        } else {
+          this.overallClass = ""
+          this.overallTimeClass = ""
+        }
+      }
+
+      getProviderInitials() {
+        var name = this.patient.providerName;
+        var initials = name.match(/\b\w[^, MD]/g);
+        initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
+        this.providerInitials = initials
+      }
+
+      patientStatusTimer() {
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.patientStatusTimer);
+        this.$.patientStatusTimer.open();
+      }
+
+      patientStatus() {
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.patientStatus);
+        this.$.patientStatus.open();
+      }
+      _setSelectedDoctor() {
+        if (this.patient.providerName == this.selecteddoctor) {
+          this.selecteddoctor = null
+          this.isselecteddoctor = true
+
+        } else if (this.patient.providerName != this.selecteddoctor) {
+          this.selecteddoctor = this.patient.providerName
+          this.isselecteddoctor = false
+
+        }
+      }
+
+      _getImportDate() {
+        function addZero(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        var myDate = new Date();
+        this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+      }
+
+
+      _getAvailableRooms() {
+        let takenRooms = []
+        this.patients.forEach(p => {
+          if (p.roomLocation != 'NOT ARRIVED' && p.roomLocation != 'No Room' && p.roomLocation != undefined && p.roomLocation != null && p.roomLocation != '' && p.roomLocation != 'NR') {
+            takenRooms.push(p.roomLocation)
+          }
+        })
+
+        var db = firebase.database();
+        this.location.forEach(l => {
+          if (takenRooms.indexOf(l.name) > -1) {
+            var roomKey = l.$key.toString()
+            var y = db.ref("/location/" + roomKey)
+            y.update({ "available": false })
+          } else {
+            var roomKey = l.$key.toString()
+            var y = db.ref("/location/" + roomKey)
+            y.update({ "available": true })
+          }
+        })
+      }
+      _openRoomMenu() {
+        this.$.roomLocation.click()
+      }
+
+
+      _updateColorClass() {
+        if (this.patient.parentStatus) {
+          this.colorclass = this.patient.parentStatus.toLowerCase()
+        } else {
+          this.colorclass = 'no-patient'
+        }
+      }
+    }
+    window.customElements.define(HSPatientItem.is, HSPatientItem);
+  </script>
+</dom-module>

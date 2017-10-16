@@ -1,0 +1,908 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../shared-styles.html">
+
+
+<!-- Firebase Import -->
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+
+<dom-module id="hs-roomview">
+
+  <template>
+
+    <style include="shared-styles">
+       :host {
+        display: block;
+      }
+
+      #patient-primary-status-label {
+        pointer-events: none;
+      }
+
+      .patientDisplayInfo {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+            }
+             .backgroundContainer {
+                @apply --layout-vertical;
+                @apply --layout-center-center;
+                height: 100%;
+                z-index: 100;
+              }
+
+              .buttonContainer {
+                @apply --layout-vertical;
+                @apply --layout-horizontal;
+                @apply --layout-center-center;
+                padding-bottom: 25px;
+              }
+
+            .btnDisplayStatus {
+                width: 20vw;
+                height: 40vh;
+                text-align: center;
+                border-radius: 50%;
+                box-shadow: 0 0px 10px rgba(0, 0, 0, 0.25), 0 0px 10px rgba(0, 0, 0, 0.22);
+                z-index: 100;
+                position: relative;
+                top: 25px;
+
+            }
+
+            .buttonContainer h3 {
+                padding: 5px;
+                line-height: 32px;
+                font-size: 32px;
+            }
+
+    </style>
+
+
+    <firebase-query id="patients" path="/patients/rockhill/{{importdate}}" data="{{patients}}"></firebase-query>
+    <firebase-query id="parentstatuscaster" path="/parentstatus/caster" data="{{parentstatuscaster}}"></firebase-query>
+    <firebase-query id="parentstatusclinic" path="/parentstatus/clinic" data="{{parentstatusclinic}}"></firebase-query>
+    <firebase-query id="parentstatusprovider" path="/parentstatus/provider" data="{{parentstatusprovider}}"></firebase-query>
+    <firebase-query id="parentstatusxray" path="/parentstatus/x-ray" data="{{parentstatusxray}}"></firebase-query>
+    <firebase-query id="parentstatuslobby" path="/parentstatus/lobby" data="{{parentstatuslobby}}"></firebase-query>
+
+    <firebase-query id="parentstatuscheckout" path="/parentstatus/checkout" data="{{parentstatuscheckout}}"></firebase-query>
+
+
+    <paper-button dialog-dismiss class="backgroundContainer" on-tap="openPrimaryStatus">
+      <!-- Patient Name -->
+      <div class="patientDisplayInfo">
+        <h1>{{patient.firstName}} {{patient.lastName}}</h1>
+        <h1>{{patient.aptTime}}</h1>
+      </div>
+    </paper-button>
+    <div class="buttonContainer">
+      <paper-button dialog-dismiss id="btnStatus" raised class$="{{patient.topRightClass}}" on-tap="openPatientDetails" style=" width: 250px;
+                height: 250px;
+                text-align: center;
+                border-radius: 50%;
+                box-shadow: 0 0px 10px rgba(0, 0, 0, 0.25), 0 0px 10px rgba(0, 0, 0, 0.22);
+                z-index: 100;
+                position: relative;
+                top: 25px;">
+        <h3 id="patient-primary-status-label">{{patient.primaryStatuslabel}}</h3>
+      </paper-button>
+    </div>
+
+    <paper-dialog with-backdrop id="openPatientDetails" style="z-index: 300; width: 350px; ">
+
+      <!-- Lobby Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('Lobby', parentStatus)}}">
+        <template id="lobby-dropdown" is="dom-repeat" items="[[parentstatuslobby]]" as="parentstatuslobby">
+          <div style="text-align: center;">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color: grey; color: #fff;">{{parentstatuslobby.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+
+      <!-- Checkout Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('Checkout', parentStatus)}}">
+        <template id="checkout-dropdown" is="dom-repeat" items="[[parentstatuscheckout]]" as="parentstatuscheckout">
+          <div style="text-align: center;">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color:grey; color: #fff;">{{parentstatuscheckout.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+
+      <!-- Caster Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('Caster', parentStatus)}}">
+        <template id="caster-dropdown" is="dom-repeat" items="[[parentstatuscaster]]" as="parentstatuscaster">
+          <div style="text-align: center">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color:#ff66ff; color: #fff;">{{parentstatuscaster.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+
+      <!-- Clinic Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('Clinic', parentStatus)}}">
+        <template id="clinic-dropdown" is="dom-repeat" items="[[parentstatusclinic]]" as="parentstatusclinic">
+          <div style="text-align: center">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color: #2ad35f; color: #fff;">{{parentstatusclinic.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+
+      <!-- Provider Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('Provider', parentStatus)}}">
+        <template id="provider-dropdown" is="dom-repeat" items="[[parentstatusprovider]]" as="parentstatusprovider">
+          <div style="text-align: center">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color: #2a9fd3; color: #fff;">{{parentstatusprovider.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+
+      <!-- X-Ray Status Buttons -->
+      <template is="dom-if" if="{{_equalsParentStatus('x-ray', parentStatus)}}">
+        <template id="x-ray-dropdown" is="dom-repeat" items="[[parentstatusxray]]" as="parentstatusxray">
+          <div style="text-align: center">
+            <paper-button data="[[patient.$key]]" on-tap="_statusButtonAction" raised dialog-dismiss style="width: 300px; height: 50px; background-color: #FFE828; color: #fff;">{{parentstatusxray.buttonlabel}}</paper-button>
+          </div>
+        </template>
+      </template>
+    </paper-dialog>
+
+    <!-- Display Parent Status after Big Button Click -->
+    <paper-dialog with-backdrop id="openPrimaryStatus" style="z-index: 300;">
+      <template is="dom-if" if="{{isLobbyPage()}}">
+        <div style="text-align: center">
+          <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: grey; color: #fff;"
+            on-tap="changeGrey">Front Desk</paper-button>
+          <br/>
+          <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: grey; color: #fff;"
+            on-tap="changeGrey2">Checkout</paper-button>
+        </div>
+      </template>
+
+      <template is="dom-if" if="{{isClinicPage()}}">
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #ff66ff; color: #fff;"
+          on-tap="changeBlue">Caster</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #2ad35f; color: #fff;"
+          on-tap="changeGreen">Clinical</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #2a9fd3; color: #fff;"
+          on-tap="changePurple">Provider</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #FFE828; color: #fff;"
+          on-tap="changeYellow">X-Ray</paper-button>
+        <br/>
+      </template>
+
+
+
+
+
+
+
+<template is="dom-if" if="{{isAllPage()}}">
+        <br/>
+          <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: grey; color: #fff;"
+            on-tap="changeGrey">Front Desk</paper-button>
+          <br/>
+          <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: grey; color: #fff;"
+            on-tap="changeGrey2">Checkout</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #ff66ff; color: #fff;"
+          on-tap="changeBlue">Caster</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #2ad35f; color: #fff;"
+          on-tap="changeGreen">Clinical</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #2a9fd3; color: #fff;"
+          on-tap="changePurple">Provider</paper-button>
+        <br/>
+        <paper-button raised dialog-dismiss style="width: 300px; height: 50px; margin: 10px; background-color: #FFE828; color: #fff;"
+          on-tap="changeYellow">X-Ray</paper-button>
+        <br/>
+</template>
+
+    </paper-dialog>
+
+  </template>
+
+  <script>
+    class HSRoomView extends Polymer.Element {
+      static get is() { return 'hs-roomview'; }
+      static get properties() {
+        return {
+          patient: {
+            type: Object,
+            notify: true,
+            value: ''
+          },
+          importdate: {
+            type: String,
+            value: ''
+          },
+          buttonColor: {
+            type: String,
+            value: ''
+          },
+          parentStatus: {
+            type: String,
+            value: ''
+          },
+          url: {
+            type: String,
+            value: window.location.href.split('/').pop()
+          }
+        }
+      }
+
+
+      isLobbyPage() {
+        this.url = window.location.href.split('/').pop()
+        return this.url === 'hs-lobby' || this.url === 'hs-frontdesk' || this.url === 'hs-checkout' || this.url === ''
+      }
+
+      isAllPage() {
+        this.url = window.location.href.split('/').pop()
+        return this.url === 'hs-all'
+      }
+
+      isClinicPage() {
+        this.url = window.location.href.split('/').pop()
+        return this.url === 'hs-clinic' || this.url === 'hs-clinical' || this.url === 'hs-provider' || this.url === 'hs-xray' || this.url === 'hs-casting'
+      }
+      //Find Parent Status and match Child Status
+      _lps1(patientKey) {
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "REGISTRATION" })
+        y.update({ "primaryStatuslabel": "REGISTRATION" })
+        y.update({ "topRightClass": "top-right-frontdesk" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "REGISTRATION",
+          "primaryStatuslabel": "REGISTRATION",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      //Find Parent Status and match Child Status
+      _lps2(patientKey) {
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CHECKED IN - COMPLETING FORMS" })
+        y.update({ "primaryStatuslabel": "COMPLETING FORMS" })
+        y.update({ "topRightClass": "top-right-frontdesk" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CHECKED IN - COMPLETING FORMS",
+          "primaryStatuslabel": "COMPLETING FORMS",
+          "statusChangeTime": rns
+        })
+
+      }
+
+
+      //Find Parent Status and match Child Status
+      _lps3(patientKey) {
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CHECKED IN - FORMS COMPLETE" })
+        y.update({ "primaryStatuslabel": "FORMS COMPLETE" })
+
+        y.update({ "topRightClass": "top-right-frontdesk" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CHECKED IN - FORMS COMPLETE",
+          "primaryStatuslabel": "FORMS COMPLETE",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _cops1(patientKey) {
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "BEGIN CHECKOUT" })
+        y.update({ "primaryStatuslabel": "BEGIN CHECKOUT" })
+
+        y.update({ "topRightClass": "top-right-checkout" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "BEGIN CHECKOUT",
+          "primaryStatuslabel": "BEGIN CHECKOUT",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _cops2(patientKey) {
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CHECKOUT COMPLETE" })
+        y.update({ "primaryStatuslabel": "CHECKOUT COMPLETE" })
+
+        y.update({ "topRightClass": "" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CHECKOUT COMPLETE",
+          "primaryStatuslabel": "CHECKOUT COMPLETE",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      //Find Parent Status and match Child Status
+      _xps1(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "WAITING FOR X-RAY" })
+        y.update({ "primaryStatuslabel": "WAITING FOR" })
+        y.update({ "topRightClass": "top-right-xray" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "WAITING FOR X-RAY",
+          "primaryStatuslabel": "WAITING FOR",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _xps2(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "BEING X-RAYED" })
+        y.update({ "primaryStatuslabel": "BEING X-RAYED" })
+        y.update({ "topRightClass": "top-right-xray" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "BEING X-RAYED",
+          "primaryStatuslabel": "BEING X-RAYED",
+          "statusChangeTime": rns
+        })
+      }
+
+      _xps3(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "X-RAY COMPLETE" })
+        y.update({ "primaryStatuslabel": "CHECKOUT" })
+        y.update({ "topRightClass": "top-right-checkout" })
+        y.update({ "roomLocation": "" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "X-RAY COMPLETE",
+          "primaryStatuslabl": "CHECKOUT",
+          "statusChangeTime": rns
+        })
+      }
+
+
+      _caps1(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "WAITING FOR CASTING" })
+        y.update({ "primaryStatuslabel": "WAITING FOR" })
+        y.update({ "topRightClass": "top-right-caster" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "WAITING FOR CASTING",
+          "primaryStatuslabel": "WAITING FOR",
+          "statusChangeTime": rns
+        })
+      }
+
+      _caps2(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CASTING IN ROOM" })
+        y.update({ "primaryStatuslabel": "IN ROOM WITH" })
+        y.update({ "topRightClass": "top-right-caster" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CASTING IN ROOM",
+          "primaryStatuslabel": "IN ROOM WITH",
+          "statusChangeTime": rns
+        })
+      }
+
+      _caps3(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CASTING COMPLETE" })
+        y.update({ "primaryStatuslabel": "CHECKOUT" })
+        y.update({ "topRightClass": "top-right-checkout" })
+        y.update({ "roomLocation": "" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CASTING COMPLETE",
+          "primaryStatuslabel": "CHECKOUT",
+          "statusChangeTime": rns
+        })
+      }
+
+      _clps1(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "WAITING FOR CLINICAL" })
+        y.update({ "primaryStatuslabel": "WAITING FOR" })
+        y.update({ "topRightClass": "top-right-clinic" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "WAITING FOR CLINICAL",
+          "primaryStatuslabel": "WAITING FOR",
+          "statusChangeTime": rns
+        })
+      }
+
+      _clps2(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CLINICAL IN ROOM" })
+        y.update({ "primaryStatuslabel": "IN ROOM WITH" })
+        y.update({ "topRightClass": "top-right-clinic" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CLINICAL IN ROOM",
+          "primaryStatuslabel": "IN ROOM WITH",
+          "statusChangeTime": rns
+        })
+
+
+      }
+
+      _clps3(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "CLINICAL COMPLETE" })
+        y.update({ "primaryStatuslabel": "CHECKOUT" })
+        y.update({ "topRightClass": "top-right-checkout" })
+        y.update({ "roomLocation": "" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "CLINICAL COMPLETE",
+          "primaryStatuslabel": "CHECKOUT",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _pps1(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "WAITING FOR PROVIDER" })
+        y.update({ "primaryStatuslabel": "WAITING FOR" })
+        y.update({ "topRightClass": "top-right-provider" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "WAITING FOR PROVIDER",
+          "primaryStatuslabel": "WAITING FOR",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _pps2(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "PROVIDER IN ROOM" })
+        y.update({ "primaryStatuslabel": "IN ROOM WITH" })
+        y.update({ "topRightClass": "top-right-provider" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "PROVIDER IN ROOM",
+          "primaryStatuslabel": "IN ROOM WITH",
+          "statusChangeTime": rns
+        })
+
+      }
+
+      _pps3(patientKey) {
+        var db = firebase.database();
+        var db = firebase.database();
+        let today = new Date();
+        function addZeros(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        let importDate = today.getMonth() + 1 + "-" + addZeros(today.getDate()) + "-" + today.getFullYear();
+
+        let rn = new Date()
+        let rns = rn.toString()
+        var y = db.ref("/patients/rockhill/" + importDate + "/" + patientKey)
+        y.update({ "primaryStatus": "PROVIDER COMPLETE" })
+        y.update({ "primaryStatuslabel": "CHECKOUT" })
+        y.update({ "topRightClass": "top-right-checkout" })
+        y.update({ "roomLocation": "" })
+
+        var scu = db.ref("/patients/rockhill/" + importDate + "/" + patientKey + "/statusChanges").push()
+
+        scu.set({
+          "primaryStatus": "PROVIDER COMPLETE",
+          "primaryStatuslabel": "CHECKOUT",
+          "statusChangeTime": rns
+        })
+
+      }
+
+
+      //Status Button
+      _statusButtonAction() {
+        var patientKey = event.model.__data.patient.$key
+        var fn;
+        var fnString;
+
+        if (event.model.__data.parentstatusxray) {
+          fnString = event.model.__data.parentstatusxray.action
+          fn = this[fnString]
+
+        } else if (event.model.__data.parentstatuscaster) {
+          fnString = event.model.__data.parentstatuscaster.action
+          fn = this[fnString]
+
+        } else if (event.model.__data.parentstatuslobby) {
+          fnString = event.model.__data.parentstatuslobby.action
+          fn = this[fnString]
+        }
+
+        else if (event.model.__data.parentstatuscheckout) {
+          fnString = event.model.__data.parentstatuscheckout.action
+          fn = this[fnString]
+        }
+
+
+        else if (event.model.__data.parentstatusclinic) {
+          fnString = event.model.__data.parentstatusclinic.action
+          fn = this[fnString]
+
+        } else if (event.model.__data.parentstatusprovider) {
+          fnString = event.model.__data.parentstatusprovider.action
+          fn = this[fnString]
+
+        } else {
+          console.log('function not found')
+          console.log(event.model.__data)
+        }
+
+        if (typeof fn === 'function') fn(patientKey)
+
+      }
+      // Format Date to match Database Function
+      constructor() {
+        super()
+        function addZero(i) {
+          if (i < 10) {
+            i = "0" + i;
+          }
+          return i;
+        }
+        var myDate = new Date();
+        this.importdate = myDate.getMonth() + 1 + "-" + addZero(myDate.getDate()) + "-" + myDate.getFullYear();
+      }
+
+      //Status Buttons
+
+      // Lobby
+      changeGrey() {
+        this.buttonColor = 'grey';
+        this.parentStatus = 'Lobby'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      // Lobby
+      changeGrey2() {
+        this.buttonColor = 'grey';
+        this.parentStatus = 'Checkout'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      //Caster
+      changeBlue() {
+        this.buttonColor = '#ff66ff';
+        this.parentStatus = 'Caster'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      //Clinic
+      changeGreen() {
+        this.buttonColor = '#2ad35f';
+        this.parentStatus = 'Clinic'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      //Provider
+      changePurple() {
+        this.buttonColor = '#2a9fd3';
+        this.parentStatus = 'Provider'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      //X-Ray
+      changeYellow() {
+        this.buttonColor = '#FFE828';
+        this.parentStatus = 'x-ray'
+        document.body.style.color = '#fff';
+        this.openPatientDetails()
+      }
+
+      //Current Status equals Parents Status
+      _equalsParentStatus(currentStatus, parentstatus) {
+        return currentStatus == parentstatus
+      }
+
+      openPatientDetails() {
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.openPatientDetails);
+        this.$.openPatientDetails.open()
+        if (event.target.className == 'top-right-provider') {
+          this.parentStatus = 'Provider'
+        } else if (event.target.className == 'top-right-xray') {
+          this.parentStatus = 'x-ray'
+        } else if (event.target.className == 'top-right-caster') {
+          this.parentStatus = 'Caster'
+        } else if (event.target.className == 'top-right-clinic') {
+          this.parentStatus = 'Clinic'
+        } else if (event.target.className == 'top-right-frontdesk') {
+          this.parentStatus = 'Lobby'
+        } else if (event.target.className == 'top-right-checkout') {
+          this.parentStatus = 'Checkout'
+        } else if (event.target.className == 'top-right-lobby') {
+          this.parentStatus = 'Lobby'
+        }
+      }
+
+      openPrimaryStatus() {
+        var body = document.querySelector('body');
+        Polymer.dom(body).appendChild(this.$.openPrimaryStatus);
+        this.$.openPrimaryStatus.open();
+      }
+    }
+
+    window.customElements.define(HSRoomView.is, HSRoomView);
+  </script>
+
+</dom-module>
